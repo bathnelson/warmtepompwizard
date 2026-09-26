@@ -526,6 +526,29 @@ body.in-wizard #wizard{display:block}
               <label class="chip"><input type="radio" name="koken" value="elek" checked><span>Nee, elektrisch / inductie</span></label>
             </div>
           </div>
+          <div class="field">
+            <span class="lbl">Wat voor douche heb je?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="douche" value="normaal" checked><span>Gewone of waterbesparende douchekop</span></label>
+              <label class="chip"><input type="radio" name="douche" value="regen"><span>Regendouche of grote douchekop</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Gebruik je een bad?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="bad" value="nee" checked><span>Nee of nooit</span></label>
+              <label class="chip"><input type="radio" name="bad" value="soms"><span>Af en toe</span></label>
+              <label class="chip"><input type="radio" name="bad" value="vaak"><span>Wekelijks of vaker</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Heb je zonnepanelen?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="pv" value="nee" checked><span>Nee</span></label>
+              <label class="chip"><input type="radio" name="pv" value="ja"><span>Ja</span></label>
+            </div>
+            <span class="hint">Deze vragen bepalen hoe groot het boilervat voor warm water moet zijn.</span>
+          </div>
           <div class="group">
           <div class="row r-stack" style="--cols:3">
             <div class="field"><label for="gas">Gasverbruik per jaar</label><div class="suffix"><input id="gas" type="number" inputmode="numeric" min="0" max="15000" placeholder="bijv. 1400"><em>m³</em></div></div>
@@ -914,6 +937,9 @@ function readInputs() {
     monument: val('monument'),
     bodem: val('bodem'),
     koeling: val('koeling'),
+    douche: val('douche'),
+    bad: val('bad'),
+    pv: val('pv'),
   };
 }
 
@@ -993,6 +1019,7 @@ function explain(i, r) {
       p.push(`Volgens je gasverbruik heeft je huis ± <b>${kw(Math.round(r.kwGas * 10) / 10)} kW</b> nodig, volgens de woningkenmerken ± ${kw(Math.round(r.kwModel * 10) / 10)} kW. ${d < 0.2 ? 'Die liggen dicht bij elkaar, dus de range is betrouwbaar.' : d < 0.4 ? 'Een redelijk verschil. We combineren ze en maken de range iets breder.' : 'Een groot verschil. Mogelijk stook je zuiniger of juist ruimer dan gemiddeld, of klopt een van de woninggegevens niet.'}`);
       p.push(`Van je gas gaat ± ${nf0.format(r.tapM3)} m³ naar warm water${i.koken === 'gas' ? ' en koken' : ''}. Dat telt niet mee voor het vermogen.`);
     } else p.push('Vul je gasverbruik in om de uitkomst te toetsen aan je werkelijke verbruik. Zonder is de range breder.');
+    p.push(`Boilervat voor all-electric: ± <b>${r.boiler} liter</b>${r.dhw.boilerPv ? `, of ${r.dhw.boilerPv} liter om zonnestroom op te slaan` : ''}.`);
   }
   return p.map(x => `<p>${x}</p>`).join('');
 }
@@ -1093,7 +1120,7 @@ function calc(i) {
   basis.push(['Vermogen volgens woningkenmerken', `${kw(Math.round(kwModel*10)/10)} kW`]);
 
   // Domestic hot water & cooking gas, to separate from space heating
-  const tapM3 = 70 + 55 * Math.min(i.pers, 6);
+  const tapM3 = Math.round((70 + 55 * Math.min(i.pers, 6)) * (i.douche === 'regen' ? 1.3 : 1) + ({ soms: 15, vaak: 40 }[i.bad] || 0));
   const kookM3 = i.koken === 'gas' ? 35 : 0;
   // Supplementary heating hides part of the heat demand from the gas meter (wood, airco, electric),
   // or burns gas at lower efficiency than the boiler (gas fire). Share of heat taken over, per source:
@@ -1144,7 +1171,18 @@ function calc(i) {
   const hHi = Math.max(hLo + 1, Math.round(hi * 0.6 * 2) / 2);
 
   // Tap water vessel
-  const boiler = i.pers <= 1 ? 150 : i.pers <= 3 ? 200 : i.pers <= 4 ? 250 : 300;
+  // Hot-water vessel, sized on the busiest moment of the day (mixed water at 40 °C)
+  const showerL = i.douche === 'regen' ? 70 : 45;   // 13 vs 8 L/min for ± 5–6 minutes
+  const morning = Math.min(i.pers, 6) * showerL * (i.pers > 1 ? 0.85 : 1);   // most of the household in one morning
+  const bathPeak = i.bad && i.bad !== 'nee' ? 130 + showerL : 0;             // a bath plus one shower
+  const peak40 = Math.max(morning, bathPeak);
+  // Tank at 50 °C, cold water 10 °C → 0.75 L of tank per L at 40 °C; ± 80% usable (stratification); 20% extra for taps/dishes
+  const needL = peak40 * 1.2 * 0.75 / 0.8;
+  const SIZES = [150, 200, 250, 300, 400];
+  const boiler = SIZES.find(x => x >= needL) || 400;
+  const boilerPv = i.pv === 'ja' ? (SIZES.find(x => x > boiler) || boiler) : null;
+  const dhw = { showerL, morning, bathPeak, peak40, boilerPv, peakIsBath: bathPeak > morning,
+    reheatH: boiler * 40 * 1.163 / 1000 / Math.max(2, Math.min(lo, 6)) };
 
   // Suitability
   const wm2eff = wm2 * f;
@@ -1213,7 +1251,7 @@ function calc(i) {
   const isdeBodem = [Math.round(2500 + 300 * (lo - 1)), Math.round(2500 + 300 * (hi - 1))];
   const isdeHyb = [Math.round(1000 + 225 * Math.max(0, hLo - 1)), Math.round(1000 + 225 * (hHi - 1))];
 
-  return { wm2, f, tf, kwModel, kwGas, nonGas, bodemOk, scopBodem, bodemKwh, bodemSave, bron, bodemCost, isdeBodem, eff, ketelT, supplyT, limiting, floorTemps, highFloors, central, lo, hi, hLo, hHi, center, accuracy, boiler, advies, redenen, scop, scopHyb, wm2eff,
+  return { dhw, wm2, f, tf, kwModel, kwGas, nonGas, bodemOk, scopBodem, bodemKwh, bodemSave, bron, bodemCost, isdeBodem, eff, ketelT, supplyT, limiting, floorTemps, highFloors, central, lo, hi, hLo, hHi, center, accuracy, boiler, advies, redenen, scop, scopHyb, wm2eff,
     aeKwh, aeSave, hybKwh, hybSave, hybGasSaved, aeGasSaved, gasNu, aeCost, hybCost, isdeAE, isdeHyb, basis, spaceHeatKwh, tapM3 };
 }
 
@@ -1313,6 +1351,33 @@ function placementCard(i, r) {
   return `
     <div class="card notes">
       <h3>Past een warmtepomp in en om je huis?</h3>
+      <ul class="checklist">${items.join('')}</ul>
+    </div>`;
+}
+
+const VAT_DIM = { 150: [55, 125], 200: [60, 150], 250: [60, 175], 300: [65, 185], 400: [70, 200] };
+function dhwCard(i, r) {
+  const d = r.dhw, L = r.boiler, [dia, h] = VAT_DIM[L];
+  const aeRec = r.advies === 'ae' || r.advies === 'ae-check';
+  const items = [];
+  const add = (cls, head, text) => items.push(`<li class="${cls}"><b>${cls === 'ok' ? '✓' : '!'}</b><span><strong>${head}</strong> ${text}</span></li>`);
+  const basis = d.peakIsBath
+    ? `een bad (± 130 liter) plus een douche`
+    : `${i.pers === 1 ? 'één douche' : Math.min(i.pers, 6) + ' douches kort na elkaar'} van ± ${d.showerL} liter`;
+
+  add('ok', 'Afmetingen.', `Een vat van ${L} liter is ongeveer ${dia} cm breed en ${h} cm hoog, en weegt vol ± ${L + 60} kg.`);
+  add('ok', 'Opwarmtijd.', `Is het vat leeg, dan is het na ± ${nf1.format(Math.round(r.dhw.reheatH * 2) / 2)} uur weer op temperatuur. De warmtepomp verwarmt het vat meestal 's nachts of overdag, als de verwarming even niets vraagt.`);
+  add('let', 'Temperatuur.', 'Stel 50–55 °C in: hoe warmer, hoe minder zuinig. Tegen legionella verwarmt het vat eens per week kort tot 60 °C, vaak met het ingebouwde elektrische element.');
+  if (d.boilerPv) add('ok', 'Zonnepanelen.', `Kies liever ${d.boilerPv} liter en laat de warmtepomp het vat overdag op zonnestroom tot 60 °C opwarmen. Zo werkt het vat als een thermische batterij en gebruik je meer van je eigen stroom.`);
+  if (i.douche === 'regen') add('let', 'Regendouche.', `Een regendouche gebruikt ± 13 liter per minuut, bijna het dubbele van een gewone douche. Met een waterbesparende douchekop kan het vat een maat kleiner en daalt je energieverbruik voor warm water met ± 30%.`);
+  if (i.bad === 'vaak' && L >= 250) add('let', 'Bad.', 'Voor een vol bad is een groot vat nodig. Laat je het bad vullen als het vat net is opgewarmd, dan is er daarna nog genoeg voor een douche.');
+  if (i.binnen && i.binnen.length === 1 && i.binnen[0] === 'cvplek') add(L > 200 ? 'let' : 'ok', 'Op de plek van de cv-ketel.', `Daar past meestal een binnenunit met een ingebouwd vat van 180–200 liter. ${L > 200 ? 'Voor jouw gebruik is dat krap. Kies een losse boiler elders, of een zuinigere douchekop.' : 'Dat past bij jouw gebruik.'}`);
+  add('ok', 'Douche-wtw.', 'Een douche-warmteterugwinning haalt warmte uit het afvoerwater en bespaart 30–40% op de energie voor douchen. Handig bij een groot gezin.');
+
+  return `
+    <div class="card notes">
+      <h3>Boilervat voor warm water: ± ${L} liter${d.boilerPv ? ` (${d.boilerPv} liter met zonnepanelen)` : ''}</h3>
+      <p class="muted">${aeRec ? '' : 'Bij een hybride warmtepomp blijft de cv-ketel het warme water maken. Dit vat heb je pas nodig als je all-electric of een bodemwarmtepomp kiest. '}Gebaseerd op je drukste moment: ${basis}. Een vat van ${L} liter op 50 °C levert ± ${nf0.format(Math.round(L * 0.8 / 0.75 / 10) * 10)} liter douchewater van 40 °C.</p>
       <ul class="checklist">${items.join('')}</ul>
     </div>`;
 }
@@ -1443,6 +1508,8 @@ function renderResult(i, r) {
     </div>
 
     ${ltvCard(i, r)}
+
+    ${dhwCard(i, r)}
 
     ${placementCard(i, r)}
 
