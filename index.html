@@ -629,7 +629,8 @@ const ILL = {
   buiten: {
     grond:  ['Achter- of zijgevel, op de grond', HOUSE + GROUND + U(84, 54)],
     gevel:  ['Aan de gevel, op beugels', HOUSE + GROUND + `<path class="ln" d="M78 50h12M78 44l8 6"/>` + U(80, 32)],
-    dak:    ['Op een plat dak', `<path class="ln" d="M22 72V36h76v36"/><path class="ln" d="M52 72V58h14v14"/>` + GROUND + U(46, 18)],
+    uitbouw:['Op een uitbouw of aangebouwde garage', HOUSE + GROUND + `<path class="ln" d="M78 50h34v22"/><path class="ln" d="M86 72V60h12v12"/>` + U(84, 33, 24, 16)],
+    dak:    ['Op het platte dak van de woning', `<path class="ln" d="M22 72V36h76v36"/><path class="ln" d="M52 72V58h14v14"/>` + GROUND + U(46, 18)],
     balkon: ['Op het balkon', `<path class="ln" d="M24 72V8h56v64"/><path class="ln" d="M80 46h26M106 46V32M80 32h26"/><path class="ln" d="M36 20h14v14H36zM36 52h14v14H36z"/>` + GROUND + U(82, 28, 20, 14)],
     geen:   ['Geen geschikte plek buiten', HOUSE + GROUND + `<rect x="84" y="54" width="26" height="18" rx="2" fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-dasharray="3 3"/>` + NO],
   },
@@ -1319,6 +1320,7 @@ function placementCard(i, r) {
     add('stop', 'Geen plek voor een buitenunit.', `Een lucht-water-warmtepomp heeft een buitenunit nodig. Alternatieven: een <em>ventilatiewarmtepomp</em> die warmte uit je ventilatielucht haalt (past bij mechanische ventilatie, ± 1–2 kW, vooral voor warm water en als hybride)${r.bodemOk ? ', of een <em>bodemwarmtepomp</em> met een bron in de tuin (duurder, maar stil, zuinig en zonder buitenunit)' : ''}. Vraag bij een appartement ook naar een collectieve oplossing via de VvE.`);
   } else {
     if (i.buiten.includes('grond')) add('ok', 'Op de grond aan de achter- of zijgevel.', 'Dit is de beste plek: stevig, goed bereikbaar voor onderhoud en het minst last van trillingen. Zet de unit op een betonnen tegel of trillingsdempers, met ± 30 cm vrije ruimte aan de achterkant.');
+    else if (i.buiten.includes('uitbouw')) add('ok', 'Op een uitbouw of aangebouwde garage.', 'Een goede plek: laag, goed bereikbaar en uit het zicht. Let op slaapkamerramen direct erboven, want het geluid gaat omhoog. Laat de draagkracht van het dak checken (een unit weegt 60–150 kg) en zet de unit op een stevig frame met trillingsdempers, zodat de dakbedekking heel blijft.');
     else if (i.buiten.includes('dak')) add('let', 'Op een plat dak.', 'Kan goed, maar laat de draagkracht controleren (een unit weegt 60–150 kg) en zorg voor een onderhoudspad. Plaatsing op een dak geeft vaak minder geluid bij de buren.');
     else if (i.buiten.includes('gevel')) add('let', 'Aan de gevel op beugels.', 'Mogelijk, maar trillingen kunnen via de muur binnen hoorbaar worden. Gebruik zware trillingsdempende beugels en hang de unit liefst niet aan de muur van een slaapkamer.');
     else if (i.buiten.includes('balkon')) add('let', 'Op het balkon.', 'Vraag toestemming van de VvE en let op het geluid bij de buren boven en naast je. Kies een compact en stil model.');
