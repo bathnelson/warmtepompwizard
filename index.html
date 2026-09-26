@@ -464,17 +464,8 @@ body.in-wizard #wizard{display:block}
             <div class="picks" data-ill-group="buiten"></div>
             <span class="hint">Een buitenunit is ongeveer 1 m breed, 1 m hoog en 40 cm diep en heeft rondom wat vrije ruimte nodig voor de luchtstroom. Meerdere antwoorden mogelijk.</span>
           </div>
-          <div class="field">
-            <span class="lbl">Kan er in je tuin of op je oprit een bodembron geboord worden?</span>
-            <div class="chips">
-              <label class="chip"><input type="radio" name="bodem" value="ja"><span>Ja, er is ruimte en een boorwagen kan erbij</span></label>
-              <label class="chip"><input type="radio" name="bodem" value="nee"><span>Nee</span></label>
-              <label class="chip"><input type="radio" name="bodem" value="?" checked><span>Weet ik niet</span></label>
-            </div>
-            <span class="hint">Een bodemwarmtepomp (brine/water) haalt warmte uit een gesloten bron van 50–150 m diep. Daarvoor moet een kleine boorwagen (± 1,2 m breed) bij de plek kunnen. Je hebt dan geen buitenunit nodig.</span>
-          </div>
-          <div class="field">
-            <span class="lbl">Hoe ver is die plek van het raam of de tuin van de buren?</span>
+          <div class="field" id="burenField">
+            <span class="lbl">Hoe ver staat de buitenunit dan van het raam of de tuin van de buren?</span>
             <div class="chips">
               <label class="chip"><input type="radio" name="buren" value="dicht"><span>Minder dan 2 meter</span></label>
               <label class="chip"><input type="radio" name="buren" value="mid" checked><span>2 tot 5 meter</span></label>
@@ -494,6 +485,15 @@ body.in-wizard #wizard{display:block}
               <select id="aansluiting"><option value="onbekend" selected>Weet ik niet</option><option value="1f">1-fase (1 × 35 A of 40 A)</option><option value="3f">3-fase (3 × 25 A)</option></select>
               <span class="hint">Staat op de hoofdschakelaar in de meterkast.</span>
             </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Alternatief zonder buitenunit: kan er in je tuin of op je oprit een bodembron geboord worden?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="bodem" value="ja"><span>Ja, er is ruimte en een boorwagen kan erbij</span></label>
+              <label class="chip"><input type="radio" name="bodem" value="nee"><span>Nee</span></label>
+              <label class="chip"><input type="radio" name="bodem" value="?" checked><span>Weet ik niet</span></label>
+            </div>
+            <span class="hint">Een bodemwarmtepomp (brine/water) haalt warmte uit een gesloten bron van 50–150 m diep. Daarvoor moet een kleine boorwagen (± 1,2 m breed) bij de plek kunnen. Je hebt dan geen buitenunit nodig.</span>
           </div>
           <div class="field">
             <span class="lbl">Is je woning een monument of ligt die in een beschermd stads- of dorpsgezicht?</span>
@@ -647,10 +647,14 @@ $$('[data-ill-group]').forEach(box => {
   box.innerHTML = Object.entries(ILL[g]).map(([v, [txt, svg]]) =>
     `<label class="pick"><input type="checkbox" name="${g}" value="${v}"><span class="box"><svg class="ill" viewBox="0 0 120 80" aria-hidden="true">${svg}</svg>${txt}</span></label>`).join('');
 });
+// The neighbours question only makes sense when there is a spot for an outdoor unit
+const syncBuren = () => { $('#burenField').hidden = $$('input[name=buiten]:checked').some(x => x.value === 'geen'); };
+$$('input[name=buiten]').forEach(el => el.addEventListener('change', syncBuren));
 // "geen" excludes the other choices
 $$('input[name=buiten], input[name=binnen]').forEach(el => el.addEventListener('change', () => {
   if (!el.checked) return;
   $$(`input[name=${el.name}]`).forEach(o => { if (o !== el && (el.value === 'geen') !== (o.value === 'geen')) o.checked = false; });
+  syncBuren();
 }));
 
 /* ---------- defaults by construction year ---------- */
@@ -1543,7 +1547,7 @@ function renderResult(i, r) {
     <p class="disclaimer">Aan dit advies kunnen geen rechten worden ontleend. Het is een eerste indicatie op basis van gemiddelde woningkenmerken. Een warmteverliesberekening door een erkende installateur bij jou thuis blijft een onmisbare stap.</p>
   `;
   $('#backBtn').onclick = () => showStep(2);
-  $('#againBtn').onclick = () => { sub = 0; maxSub = 0; hasResult = false; lastChange = ''; prevCenter = null; deltaHtml = ''; $('#houseForm').reset(); $('#startForm').reset(); resetAfg(); isoTouched = false; $('#bijFreq').hidden = true; house = { address: null }; goHome(); $('#pc').focus(); };
+  $('#againBtn').onclick = () => { sub = 0; maxSub = 0; hasResult = false; lastChange = ''; prevCenter = null; deltaHtml = ''; $('#houseForm').reset(); $('#startForm').reset(); resetAfg(); syncBuren(); isoTouched = false; $('#bijFreq').hidden = true; house = { address: null }; goHome(); $('#pc').focus(); };
 }
 })();
 </script>
