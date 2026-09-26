@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warmtepompwizard</title>
+<meta name="description" content="Ontdek in 3 minuten welk warmtepompvermogen past bij jouw woning. Gratis, onafhankelijk en zonder verkooppraatjes.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23127a5c'/%3E%3Cpath d='M9 22V14l7-5 7 5v8' fill='none' stroke='white' stroke-width='2.5' stroke-linejoin='round'/%3E%3Cpath d='M16 20c-2 0-3-1.3-3-3 0-2 3-4.5 3-4.5s3 2.5 3 4.5c0 1.7-1 3-3 3z' fill='%23ffc857'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f8f7; --surface:#ffffff; --surface-2:#eef3f1; --ink:#14211d; --ink-2:#4b5a55; --ink-3:#7a8883;
+  --line:#dde5e2; --brand:#127a5c; --brand-ink:#ffffff; --brand-soft:#e1f2ec; --accent:#f2a900; --accent-soft:#fff4d6;
+  --warn:#b54708; --warn-soft:#fff1e6; --ok:#127a5c; --shadow:0 1px 2px rgba(20,33,29,.05),0 8px 24px rgba(20,33,29,.06);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1513; --surface:#16201d; --surface-2:#1c2926; --ink:#e7eeeb; --ink-2:#aebbb6; --ink-3:#83918c;
+    --line:#2a3834; --brand:#3cc49a; --brand-ink:#08130f; --brand-soft:#173a30; --accent:#ffc857; --accent-soft:#3a2f12;
+    --warn:#ffa46b; --warn-soft:#3a2415; --ok:#3cc49a; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1513; --surface:#16201d; --surface-2:#1c2926; --ink:#e7eeeb; --ink-2:#aebbb6; --ink-3:#83918c;
+  --line:#2a3834; --brand:#3cc49a; --brand-ink:#08130f; --brand-soft:#173a30; --accent:#ffc857; --accent-soft:#3a2f12;
+  --warn:#ffa46b; --warn-soft:#3a2415; --ok:#3cc49a; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+h1,h2,h3{line-height:1.2;letter-spacing:-.02em;margin:0 0 .5em}
+h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800}
+h2{font-size:clamp(1.5rem,3.2vw,2.1rem);font-weight:750}
+h3{font-size:1.15rem;font-weight:650}
+p{margin:0 0 1em}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+.muted{color:var(--ink-2)}
+.small{font-size:.875rem}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* header */
+header.site{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.site .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
+.logo b{color:var(--brand)}
+.logo svg{width:32px;height:32px;flex:none}
+nav.main{display:flex;gap:22px;align-items:center}
+nav.main a{color:var(--ink-2);text-decoration:none;font-weight:500;font-size:.95rem}
+nav.main a:hover{color:var(--ink)}
+nav.main a.btn{color:var(--brand-ink);white-space:nowrap}
+@media (max-width:720px){nav.main a:not(.btn){display:none}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;font:600 1rem/1 Inter,sans-serif;cursor:pointer;text-decoration:none;transition:transform .1s,filter .15s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--brand);color:var(--brand-ink)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-sm{padding:9px 16px;font-size:.9rem}
+.btn[disabled]{opacity:.55;cursor:default}
+
+/* hero */
+.hero{padding:64px 0 48px}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+@media (max-width:880px){.hero-grid{grid-template-columns:1fr;gap:32px}.hero{padding:36px 0 24px}}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;background:var(--brand-soft);color:var(--brand);font-weight:600;font-size:.85rem;padding:6px 12px;border-radius:999px;margin-bottom:18px}
+.lead{font-size:1.15rem;color:var(--ink-2);max-width:36em}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.start-card{padding:28px}
+.start-card h3{margin-bottom:4px}
+.checks{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:8px}
+.checks li{display:flex;gap:10px;align-items:flex-start;color:var(--ink-2)}
+.checks li::before{content:"";flex:none;width:20px;height:20px;margin-top:2px;border-radius:50%;background:var(--brand-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 10.5l2.5 2.5L14 7.5' fill='none' stroke='%23127a5c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat}
+
+/* forms */
+.field{display:grid;gap:6px;margin-bottom:14px;align-content:start}
+.field>label,.field>.lbl{font-weight:600;font-size:.92rem}
+.hint{font-size:.82rem;color:var(--ink-3)}
+input[type=text],input[type=number],select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-height:46px}
+input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--brand) 50%,transparent);outline-offset:1px;border-color:var(--brand)}
+.row{display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:12px}
+@media (max-width:560px){.row.r-stack{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chip span{display:inline-block;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:.92rem;font-weight:500;cursor:pointer;user-select:none}
+.chip input:checked+span{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+.chip input:focus-visible+span{outline:2px solid var(--brand);outline-offset:2px}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
+.pick{position:relative}
+.pick input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.pick .box{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;padding:10px 8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;text-align:center;font-size:.86rem;font-weight:500;line-height:1.3;transition:border-color .15s,background .15s}
+.pick svg{width:100%;max-width:120px;height:auto;display:block}
+.pick input:checked+.box{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:600}
+.pick input:focus-visible+.box{outline:2px solid var(--brand);outline-offset:2px}
+.ill .ln{fill:none;stroke:var(--ink-3);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.ill .gr{stroke:var(--ink-3);stroke-width:2;stroke-dasharray:3 4}
+.ill .un{fill:var(--surface);stroke:var(--brand);stroke-width:2}
+.ill .fan{fill:none;stroke:var(--brand);stroke-width:1.6}
+.ill .ve{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.ill .no{stroke:var(--warn);stroke-width:2.5;stroke-linecap:round}
+.checklist{list-style:none;padding:0;margin:0}
+.checklist li{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;color:var(--ink-2)}
+.checklist li b{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;margin-top:2px}
+.checklist li.ok b{background:var(--brand-soft);color:var(--brand)}
+.checklist li.let b{background:var(--accent-soft);color:var(--ink)}
+.checklist li.stop b{background:var(--warn-soft);color:var(--warn)}
+.checklist li strong{color:var(--ink)}
+.err{color:var(--warn);font-size:.88rem;min-height:1.2em}
+.suffix{position:relative}
+.suffix input{padding-right:58px}
+.suffix em{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--ink-3);font-size:.88rem;pointer-events:none}
+
+/* sections */
+section.band{padding:64px 0}
+section.band.alt{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:28px}
+@media (max-width:800px){.steps{grid-template-columns:1fr}}
+.step{padding:24px}
+.step .n{width:36px;height:36px;border-radius:10px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-weight:800;margin-bottom:14px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px}
+@media (max-width:800px){.compare{grid-template-columns:1fr}}
+.compare .card{padding:24px}
+.compare .bad h3{color:var(--ink-3)}
+.compare .good{border-color:var(--brand)}
+.compare ul{margin:0;padding-left:1.1em;color:var(--ink-2)}
+.compare li{margin-bottom:6px}
+.faq{max-width:780px;margin-top:24px}
+.faq details{border-bottom:1px solid var(--line);padding:4px 0}
+.faq summary{cursor:pointer;list-style:none;padding:14px 32px 14px 0;font-weight:600;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:10px;font-size:1.4rem;color:var(--brand);font-weight:400}
+.faq details[open] summary::after{content:"–"}
+.faq details p{color:var(--ink-2)}
+footer.site{padding:40px 0;color:var(--ink-3);font-size:.88rem}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
+footer.site a{color:var(--ink-2)}
+
+/* wizard */
+#wizard{display:none;padding:32px 0 64px}
+body.in-wizard #home{display:none}
+body.in-wizard #wizard{display:block}
+.progress{display:flex;gap:8px;justify-content:center;margin:0 0 28px;padding:0;list-style:none}
+.progress li{display:flex;align-items:center;gap:8px;color:var(--ink-3);font-weight:600;font-size:.9rem}
+.progress li .dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:.85rem;background:var(--surface)}
+.progress li.active{color:var(--ink)}
+.progress li.active .dot{border-color:var(--brand);background:var(--brand);color:var(--brand-ink)}
+.progress li.done .dot{border-color:var(--brand);color:var(--brand)}
+.progress li+li::before{content:"";width:22px;height:2px;background:var(--line);margin-right:2px}
+.progress li.done+li::before,.progress li.done+li.active::before{background:var(--brand)}
+.progress button{all:unset;display:flex;align-items:center;gap:8px;cursor:pointer;border-radius:999px}
+.progress button:hover .lbl{text-decoration:underline}
+.progress button:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+@media (max-width:860px){.progress li .lbl{display:none}.progress li.active .lbl{display:inline}}
+@media (max-width:560px){.progress{gap:4px}.progress li{gap:4px}.progress li .dot{width:24px;height:24px;font-size:.75rem}.progress li+li::before{width:8px}.progress li.active .lbl{display:none}}
+@media (max-width:480px){.nx{display:none}.nav-row{flex-wrap:nowrap}}
+.wiz-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;max-width:1080px;margin:0 auto;align-items:start}
+@media (max-width:900px){.wiz-layout{grid-template-columns:1fr}}
+.wiz-card{padding:28px}
+@media (max-width:560px){.wiz-card{padding:20px}}
+.sub h2{margin-bottom:6px}
+.sub .intro{color:var(--ink-2);margin:0 0 22px}
+.sub>.group:first-of-type{border-top:0;padding-top:0}
+#houseErr{margin-top:8px}
+.insight{padding:22px;position:sticky;top:84px}
+@media (max-width:900px){.insight{position:static}}
+.insight h3{font-size:1rem;margin-bottom:10px;color:var(--ink-2);font-weight:600}
+.insight .ins-kw{font-size:2.1rem;font-weight:800;letter-spacing:-.03em;color:var(--brand);line-height:1.1}
+.insight .ins-kw small{font-size:.5em;color:var(--ink-2);margin-left:3px}
+.insight .ins-bar{position:relative;height:8px;border-radius:4px;background:var(--surface-2);margin:12px 0 4px}
+.insight .ins-bar i{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--brand);transition:left .3s,width .3s}
+.insight .ins-delta{margin-top:10px;font-size:.88rem;padding:8px 10px;border-radius:8px;background:var(--surface-2);color:var(--ink-2)}
+.insight .ins-delta b{color:var(--ink)}
+.insight .ins-delta .up{color:var(--warn);font-weight:700}
+.insight .ins-delta .down{color:var(--ok);font-weight:700}
+.insight .kv{margin-top:14px;font-size:.88rem}
+.insight .ins-explain{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:.9rem;color:var(--ink-2)}
+.insight .ins-explain h4{margin:0 0 6px;font-size:.9rem;color:var(--ink)}
+.insight .ins-explain p{margin:0 0 8px}
+.insight .ins-explain p:last-child{margin:0}
+.insight .empty{color:var(--ink-3);font-size:.92rem;margin:0}
+.panel{max-width:760px;margin:0 auto}
+.panel>.card{padding:28px}
+@media (max-width:560px){.panel>.card{padding:20px}}
+.panel h2{text-align:center}
+.panel .intro{text-align:center;color:var(--ink-2);max-width:34em;margin:0 auto 24px}
+.group{border-top:1px solid var(--line);padding-top:20px;margin-top:8px}
+.group h3{margin-bottom:12px}
+.found{display:flex;gap:12px;align-items:flex-start;background:var(--brand-soft);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:.93rem}
+.found.warn{background:var(--warn-soft)}
+.nav-row{display:flex;justify-content:space-between;gap:12px;margin-top:24px;flex-wrap:wrap}
+.spinner{width:18px;height:18px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* result */
+.result{max-width:980px;margin:0 auto}
+.result-head{text-align:center;margin-bottom:24px}
+.big{padding:32px;text-align:center;position:relative;overflow:hidden}
+.big .label{font-weight:600;color:var(--ink-2)}
+.big .value{font-size:clamp(2.6rem,8vw,4.4rem);font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:6px 0 2px;color:var(--brand)}
+.big .value small{font-size:.42em;font-weight:700;color:var(--ink-2);margin-left:4px}
+.scale{position:relative;height:56px;margin:28px auto 4px;max-width:640px}
+.scale .track{position:absolute;left:0;right:0;top:18px;height:10px;border-radius:5px;background:var(--surface-2)}
+.scale .band{position:absolute;top:14px;height:18px;border-radius:9px;background:var(--brand)}
+.scale .band.hyb{background:var(--accent);top:16px;height:14px;opacity:.9}
+.scale .ticks{position:absolute;left:0;right:0;top:36px;display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-3)}
+.legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;font-size:.85rem;color:var(--ink-2)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.grid-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:20px}
+.badge.green{background:var(--accent);color:#1b1400}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+@media (max-width:820px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.opt{padding:24px;position:relative}
+.opt.rec{border:2px solid var(--brand)}
+.badge{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.02em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--brand);color:var(--brand-ink);margin-bottom:10px}
+.badge.alt{background:var(--surface-2);color:var(--ink-2)}
+.opt .kw{font-size:2rem;font-weight:800;letter-spacing:-.02em}
+.kv{display:grid;grid-template-columns:1fr auto;gap:8px 16px;margin:16px 0 0;font-size:.93rem}
+.kv dt{color:var(--ink-2)}
+.kv dd{margin:0;font-weight:600;text-align:right}
+.stat{padding:20px}
+.stat .k{color:var(--ink-2);font-size:.88rem;font-weight:500}
+.stat .v{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.notes{padding:24px;margin-top:20px}
+.notes ul{margin:0;padding-left:1.1em}
+.notes li{margin-bottom:8px;color:var(--ink-2)}
+.notes li strong{color:var(--ink)}
+.tip{display:flex;gap:10px;align-items:flex-start}
+.basis{margin-top:20px;padding:20px 24px;font-size:.9rem}
+.basis summary{cursor:pointer;font-weight:600}
+.basis table{width:100%;border-collapse:collapse;margin-top:12px}
+.basis td{padding:6px 0;border-bottom:1px solid var(--line);color:var(--ink-2)}
+.basis td:last-child{text-align:right;color:var(--ink);font-weight:600}
+.disclaimer{font-size:.82rem;color:var(--ink-3);margin-top:24px;text-align:center;max-width:52em;margin-left:auto;margin-right:auto}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+
+@media print{
+  header.site,footer.site,.actions,.progress,.nav-row{display:none!important}
+  body{background:#fff}
+  .card{box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="#" data-home>
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--brand)"/><path d="M9 22V14l7-5 7 5v8" fill="none" stroke="var(--brand-ink)" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 20c-2 0-3-1.3-3-3 0-2 3-4.5 3-4.5s3 2.5 3 4.5c0 1.7-1 3-3 3z" fill="var(--accent)"/></svg>
+      <span>Warmtepomp<b>wizard</b></span>
+    </a>
+    <nav class="main">
+      <a href="#hoe" data-home>Hoe het werkt</a>
+      <a href="#waarom" data-home>Waarom een range</a>
+      <a href="#faq" data-home>Veelgestelde vragen</a>
+      <a class="btn btn-primary btn-sm" href="#scan" data-start>Start de scan</a>
+    </nav>
+  </div>
+</header>
+
+<main id="home">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Gratis · onafhankelijk · geen verkoop</span>
+        <h1>Welk warmtepomp&shy;vermogen past bij jouw huis?</h1>
+        <p class="lead">Geen lijst met 250 merken en modellen, maar een helder antwoord: het vermogen in kilowatt dat jouw woning nodig heeft. Daarmee vergelijk je elke offerte zelf.</p>
+        <ul class="checks">
+          <li>Woninggegevens automatisch uit het Kadaster (BAG)</li>
+          <li>Vermogensrange voor all-electric én hybride</li>
+          <li>Indicatie van kosten, subsidie en besparing</li>
+        </ul>
+      </div>
+      <form class="card start-card" id="startForm" novalidate>
+        <h3>Start de scan</h3>
+        <p class="muted small">Klaar in ongeveer 3 minuten.</p>
+        <div class="field">
+          <label for="pc">Postcode</label>
+          <input id="pc" type="text" inputmode="text" autocomplete="postal-code" placeholder="bijv. 3511 LX" maxlength="7">
+        </div>
+        <div class="row" style="--cols:2">
+          <div class="field">
+            <label for="hn">Huisnummer</label>
+            <input id="hn" type="text" inputmode="numeric" placeholder="12" maxlength="6">
+          </div>
+          <div class="field">
+            <label for="tv">Toevoeging</label>
+            <input id="tv" type="text" placeholder="A" maxlength="6">
+          </div>
+        </div>
+        <div class="err" id="startErr" role="alert"></div>
+        <button class="btn btn-primary" style="width:100%" type="submit" id="startBtn">Zoek mijn woning</button>
+        <p class="small muted" style="margin:12px 0 0;text-align:center"><a href="#" id="manualLink">Zonder adres invullen</a> (bijv. voor nieuwbouw)</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="band alt" id="hoe">
+    <div class="wrap">
+      <h2>Hoe het werkt</h2>
+      <p class="muted">Drie stappen, geen account, geen telefoontjes achteraf.</p>
+      <div class="steps">
+        <div class="card step"><div class="n">1</div><h3>Adres</h3><p class="muted">We halen bouwjaar en woonoppervlak op uit de Basisregistratie Adressen en Gebouwen.</p></div>
+        <div class="card step"><div class="n">2</div><h3>Woning</h3><p class="muted">Je controleert de gegevens en vult isolatie, verwarming en eventueel je gasverbruik aan.</p></div>
+        <div class="card step"><div class="n">3</div><h3>Advies</h3><p class="muted">Je krijgt het benodigde vermogen als range, plus of hybride of all-electric het beste past.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="waarom">
+    <div class="wrap">
+      <h2>Waarom een vermogensrange in plaats van een productlijst?</h2>
+      <p class="muted" style="max-width:44em">Het belangrijkste getal bij een warmtepomp is het vermogen. Te klein en je zit in januari in de kou of stookt bij met elektrische weerstand. Te groot en de pomp slaat vaak aan en af, wat efficiëntie en levensduur kost. Als je dat getal weet, is elk merk te vergelijken.</p>
+      <div class="compare">
+        <div class="card bad">
+          <h3>Een lijst met modellen</h3>
+          <ul>
+            <li>Kiest een merk voordat je weet wat je nodig hebt</li>
+            <li>Resultaten vaak gestuurd door partners die betalen</li>
+            <li>Veroudert snel, want modellen wisselen elk jaar</li>
+          </ul>
+        </div>
+        <div class="card good">
+          <h3>Een vermogensrange</h3>
+          <ul>
+            <li>Werkt voor ieder merk en elke installateur</li>
+            <li>Je ziet meteen of een offerte te groot of te klein is</li>
+            <li>Onafhankelijk: we verkopen niets</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="faq">
+    <div class="wrap">
+      <h2>Veelgestelde vragen</h2>
+      <div class="faq">
+        <details><summary>Is mijn woning geschikt voor een warmtepomp?</summary><p>Vrijwel elke woning is geschikt voor een hybride warmtepomp. Voor een all-electric warmtepomp moet de woning redelijk goed geïsoleerd zijn (grofweg energielabel C of beter) en moeten de radiatoren of vloerverwarming op lage temperatuur (maximaal ±55 °C) warm genoeg worden. De scan geeft aan welke variant bij jou past.</p></details>
+        <details><summary>Wat betekent het vermogen in kW?</summary><p>Het vermogen is hoeveel warmte de warmtepomp per uur kan leveren op een koude dag. Wij rekenen met een buitentemperatuur van −10 °C en een binnentemperatuur van 20 °C, de gebruikelijke ontwerpcondities in Nederland. Let op: fabrikanten noemen vaak het vermogen bij +7 °C, en dat ligt hoger. Vraag de installateur naar het vermogen bij −7 of −10 °C.</p></details>
+        <details><summary>Wat is het verschil tussen hybride en all-electric?</summary><p>Een hybride warmtepomp werkt samen met je cv-ketel: de warmtepomp doet het grootste deel van het jaar het werk en de ketel springt bij op de koudste dagen en voor warm water. Een all-electric warmtepomp vervangt de cv-ketel volledig, inclusief warm water via een boilervat. Daarmee kun je van het gas af.</p></details>
+        <details><summary>Hoe nauwkeurig is de uitkomst?</summary><p>De scan geeft een goede eerste indicatie op basis van bouwjaar, oppervlak, woningtype, isolatie en (als je dat invult) je gasverbruik. Een installateur hoort altijd een warmteverliesberekening te maken, bijvoorbeeld volgens ISSO 51/53. Gebruik onze range om te controleren of die berekening logisch is.</p></details>
+        <details><summary>Waarom helpt het om mijn gasverbruik in te vullen?</summary><p>Je gasverbruik is een meting van hoeveel warmte je huis echt nodig heeft, inclusief jouw stookgedrag. Daarmee wordt de range een stuk nauwkeuriger dan alleen op basis van bouwjaar.</p></details>
+        <details><summary>Welke subsidie is er?</summary><p>Voor warmtepompen kun je subsidie aanvragen via de ISDE-regeling van RVO. De hoogte hangt af van type en vermogen van de warmtepomp. Wij tonen een indicatie; kijk voor het actuele bedrag altijd op <a href="https://www.rvo.nl/subsidies-financiering/isde" target="_blank" rel="noopener">rvo.nl/isde</a>.</p></details>
+        <details><summary>Wat gebeurt er met mijn gegevens?</summary><p>Niets. De berekening gebeurt volledig in je browser. We slaan geen adres of woninggegevens op en delen ze met niemand. Alleen je postcode en huisnummer gaan naar de openbare adresservice van PDOK om je woning op te zoeken.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<main id="wizard">
+  <div class="wrap">
+    <ol class="progress" id="progress"></ol>
+
+    <!-- STEP 2: stepper -->
+    <div class="wiz-layout" id="step2">
+      <form class="card wiz-card" id="houseForm" novalidate>
+        <section class="sub" data-sub="woning">
+          <h2>Je woning</h2>
+          <p class="intro">Controleer wat we gevonden hebben en vul aan waar nodig. Dit bepaalt het grootste deel van het vermogen.</p>
+          <div id="foundBox"></div>
+        <div class="field">
+          <span class="lbl">Type woning</span>
+          <div class="chips" id="typeChips">
+            <label class="chip"><input type="radio" name="type" value="app"><span>Appartement</span></label>
+            <label class="chip"><input type="radio" name="type" value="tussen"><span>Tussenwoning</span></label>
+            <label class="chip"><input type="radio" name="type" value="hoek"><span>Hoekwoning / 2-onder-1-kap</span></label>
+            <label class="chip"><input type="radio" name="type" value="vrij"><span>Vrijstaand</span></label>
+          </div>
+        </div>
+        <div class="row r-stack" style="--cols:3">
+          <div class="field"><label for="bouwjaar">Bouwjaar</label><input id="bouwjaar" type="number" inputmode="numeric" min="1000" max="2030" placeholder="bijv. 1978"></div>
+          <div class="field"><label for="opp">Woonoppervlak</label><div class="suffix"><input id="opp" type="number" inputmode="numeric" min="15" max="1000" placeholder="bijv. 120"><em>m²</em></div></div>
+          <div class="field"><label for="label">Energielabel</label>
+            <select id="label"><option value="">Weet ik niet</option><option>A++++</option><option>A+++</option><option>A++</option><option>A+</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select>
+          </div>
+        </div>
+
+        </section>
+
+        <section class="sub" data-sub="isolatie" hidden>
+          <h2>Isolatie en ventilatie</h2>
+          <p class="intro">We hebben ingevuld wat gebruikelijk is voor het bouwjaar. Pas het aan als er later iets is verbeterd.</p>
+          <div class="field">
+            <span class="lbl">Wat is geïsoleerd?</span>
+            <div class="chips">
+              <label class="chip"><input type="checkbox" name="iso" value="dak"><span>Dak</span></label>
+              <label class="chip"><input type="checkbox" name="iso" value="gevel"><span>Gevel / spouw</span></label>
+              <label class="chip"><input type="checkbox" name="iso" value="vloer"><span>Vloer</span></label>
+            </div>
+            <span class="hint" id="isoHint">Heb je een energielabel ingevuld? Dan wegen deze keuzes minder zwaar mee, want het label bevat ze al.</span>
+          </div>
+          <div class="row r-stack">
+            <div class="field"><label for="glas">Beglazing</label>
+              <select id="glas"><option value="enkel">Enkel glas</option><option value="dubbel" selected>Dubbel glas</option><option value="hrpp">HR++</option><option value="triple">Triple glas</option></select>
+            </div>
+            <div class="field"><label for="vent">Ventilatie</label>
+              <select id="vent"><option value="natuurlijk">Natuurlijk (roosters, ramen)</option><option value="c" selected>Mechanische afzuiging (type C)</option><option value="c-vraag">Vraaggestuurd type C (CO₂/vocht)</option><option value="d">Balansventilatie met WTW (type D)</option></select>
+            </div>
+          </div>
+        </section>
+
+        <section class="sub" data-sub="verwarming" hidden>
+          <h2>Verwarming</h2>
+          <p class="intro">Hoe je nu verwarmt bepaalt hoe warm het water uit de warmtepomp moet zijn, en daarmee hoe zuinig die is.</p>
+          <div class="field">
+            <span class="lbl">Hoe wordt elke verdieping verwarmd?</span>
+            <div class="row r-stack" style="--cols:3">
+              <div class="field" style="margin:0"><label for="afg-bg" class="hint">Begane grond</label><select id="afg-bg" data-afg="0.5"></select></div>
+              <div class="field" style="margin:0"><label for="afg-verd" class="hint">Verdieping(en)</label><select id="afg-verd" data-afg="0.35"></select></div>
+              <div class="field" style="margin:0"><label for="afg-zolder" class="hint">Zolder</label><select id="afg-zolder" data-afg="0.15"></select></div>
+            </div>
+            <span class="hint">De verdieping met de hoogste temperatuur bepaalt hoe warm de warmtepomp het water moet maken, en daarmee het rendement. Woon je op één laag? Kies dan "Geen / niet verwarmd" voor de rest.</span>
+          </div>
+          <div class="row r-stack">
+            <div class="field"><label for="ketelLeeftijd">Hoe oud is je cv-ketel?</label>
+              <select id="ketelLeeftijd"><option value="">Weet ik niet</option><option value="5">Jonger dan 5 jaar</option><option value="10">5 tot 10 jaar</option><option value="15">10 tot 15 jaar</option><option value="20">Ouder dan 15 jaar</option><option value="geen">Geen cv-ketel (bijv. stadsverwarming)</option></select>
+            </div>
+            <div class="field"><label for="ketelTemp">Op welke temperatuur staat je ketel?</label>
+              <select id="ketelTemp"><option value="">Weet ik niet (we rekenen met 70 °C)</option><option value="50">50 °C</option><option value="55">55 °C</option><option value="60">60 °C</option><option value="65">65 °C</option><option value="70">70 °C</option><option value="75">75 °C</option><option value="80">80 °C</option><option value="90">90 °C</option></select>
+              <span class="hint">De aanvoertemperatuur voor de verwarming, meestal de knop met het radiatorsymbool of in het menu van je thermostaat.</span>
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Gebruik je ook bijverwarming?</span>
+            <div class="chips">
+              <label class="chip"><input type="checkbox" name="bij" value="gashaard"><span>Gashaard / gaskachel</span></label>
+              <label class="chip"><input type="checkbox" name="bij" value="hout"><span>Hout- of pelletkachel</span></label>
+              <label class="chip"><input type="checkbox" name="bij" value="airco"><span>Airco / lucht-lucht warmtepomp</span></label>
+              <label class="chip"><input type="checkbox" name="bij" value="elek"><span>Elektrische kachel(s)</span></label>
+            </div>
+          </div>
+          <div class="field" id="bijFreq" hidden>
+            <span class="lbl">Hoe vaak gebruik je die?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="bijfreq" value="af" checked><span>Af en toe</span></label>
+              <label class="chip"><input type="radio" name="bijfreq" value="vaak"><span>Regelmatig in de winter</span></label>
+              <label class="chip"><input type="radio" name="bijfreq" value="dag"><span>Bijna dagelijks</span></label>
+            </div>
+            <span class="hint">Bijverwarming neemt een deel van de warmte over, dus je gasverbruik laat minder zien dan je huis eigenlijk nodig heeft. Daar corrigeren we voor.</span>
+          </div>
+          <div class="field">
+            <span class="lbl">Wil je in de zomer ook kunnen koelen?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="koeling" value="nee" checked><span>Nee, niet nodig</span></label>
+              <label class="chip"><input type="radio" name="koeling" value="fijn"><span>Zou fijn zijn</span></label>
+              <label class="chip"><input type="radio" name="koeling" value="belangrijk"><span>Belangrijk, bijv. warme slaapkamers</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="sub" data-sub="ruimte" hidden>
+          <h2>Ruimte en plaatsing</h2>
+          <p class="intro">Waar kunnen de onderdelen komen? Dit bepaalt welke soort warmtepomp praktisch haalbaar is.</p>
+          <div class="field">
+            <span class="lbl">Waar kan een buitenunit staan?</span>
+            <div class="picks" data-ill-group="buiten"></div>
+            <span class="hint">Een buitenunit is ongeveer 1 m breed, 1 m hoog en 40 cm diep en heeft rondom wat vrije ruimte nodig voor de luchtstroom. Meerdere antwoorden mogelijk.</span>
+          </div>
+          <div class="field">
+            <span class="lbl">Kan er in je tuin of op je oprit een bodembron geboord worden?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="bodem" value="ja"><span>Ja, er is ruimte en een boorwagen kan erbij</span></label>
+              <label class="chip"><input type="radio" name="bodem" value="nee"><span>Nee</span></label>
+              <label class="chip"><input type="radio" name="bodem" value="?" checked><span>Weet ik niet</span></label>
+            </div>
+            <span class="hint">Een bodemwarmtepomp (brine/water) haalt warmte uit een gesloten bron van 50–150 m diep. Daarvoor moet een kleine boorwagen (± 1,2 m breed) bij de plek kunnen. Je hebt dan geen buitenunit nodig.</span>
+          </div>
+          <div class="field">
+            <span class="lbl">Hoe ver is die plek van het raam of de tuin van de buren?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="buren" value="dicht"><span>Minder dan 2 meter</span></label>
+              <label class="chip"><input type="radio" name="buren" value="mid" checked><span>2 tot 5 meter</span></label>
+              <label class="chip"><input type="radio" name="buren" value="ver"><span>Meer dan 5 meter</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Waar is binnen plek voor een boilervat en de binnenunit?</span>
+            <div class="picks" data-ill-group="binnen"></div>
+            <span class="hint">Voor all-electric heb je een boilervat nodig van ongeveer 60 × 60 cm en 1,7–2 m hoog. Een hybride warmtepomp heeft alleen een klein kastje naast de cv-ketel nodig.</span>
+          </div>
+          <div class="row r-stack">
+            <div class="field"><label for="leiding">Afstand tussen buitenunit en binnenplek</label>
+              <select id="leiding"><option value="kort">Minder dan 5 meter</option><option value="mid" selected>5 tot 15 meter</option><option value="lang">Meer dan 15 meter</option></select>
+            </div>
+            <div class="field"><label for="aansluiting">Elektriciteitsaansluiting</label>
+              <select id="aansluiting"><option value="onbekend" selected>Weet ik niet</option><option value="1f">1-fase (1 × 35 A of 40 A)</option><option value="3f">3-fase (3 × 25 A)</option></select>
+              <span class="hint">Staat op de hoofdschakelaar in de meterkast.</span>
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Is je woning een monument of ligt die in een beschermd stads- of dorpsgezicht?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="monument" value="nee" checked><span>Nee</span></label>
+              <label class="chip"><input type="radio" name="monument" value="ja"><span>Ja</span></label>
+              <label class="chip"><input type="radio" name="monument" value="?"><span>Weet ik niet</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="sub" data-sub="verbruik" hidden>
+          <h2>Verbruik en tarieven</h2>
+          <p class="intro">Je gasverbruik is een meting van wat je huis echt nodig heeft. Optioneel, maar het maakt de uitkomst een stuk scherper.</p>
+          <div class="field">
+            <span class="lbl">Huishouden</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="pers" value="1"><span>1</span></label>
+              <label class="chip"><input type="radio" name="pers" value="2" checked><span>2</span></label>
+              <label class="chip"><input type="radio" name="pers" value="3"><span>3</span></label>
+              <label class="chip"><input type="radio" name="pers" value="4"><span>4</span></label>
+              <label class="chip"><input type="radio" name="pers" value="5"><span>5</span></label>
+              <label class="chip"><input type="radio" name="pers" value="6"><span>6+</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Kook je op gas?</span>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="koken" value="gas"><span>Ja</span></label>
+              <label class="chip"><input type="radio" name="koken" value="elek" checked><span>Nee, elektrisch / inductie</span></label>
+            </div>
+          </div>
+          <div class="group">
+          <div class="row r-stack" style="--cols:3">
+            <div class="field"><label for="gas">Gasverbruik per jaar</label><div class="suffix"><input id="gas" type="number" inputmode="numeric" min="0" max="15000" placeholder="bijv. 1400"><em>m³</em></div></div>
+            <div class="field"><label for="gasprijs">Gasprijs</label><div class="suffix"><input id="gasprijs" type="number" step="0.01" min="0.3" max="4" value="1.35"><em>€/m³</em></div></div>
+            <div class="field"><label for="stroomprijs">Stroomprijs</label><div class="suffix"><input id="stroomprijs" type="number" step="0.01" min="0.05" max="1.5" value="0.28"><em>€/kWh</em></div></div>
+          </div>
+          <span class="hint">Je gasverbruik staat op je jaarafrekening of in de app van je energieleverancier.</span>
+          </div>
+        </section>
+
+        <div class="err" id="houseErr" role="alert"></div>
+        <div class="nav-row">
+          <button type="button" class="btn btn-ghost" id="prevBtn">← Vorige</button>
+          <button type="submit" class="btn btn-primary" id="nextBtn">Volgende →</button>
+        </div>
+      </form>
+
+      <aside class="card insight" id="insight" aria-live="polite"></aside>
+    </div>
+
+    <!-- STEP 3: advies -->
+    <div class="result" id="step3" hidden></div>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>© <span id="yr"></span> Warmtepompwizard.nl · Onafhankelijk warmtepompadvies</span>
+    <span>Adresgegevens: <a href="https://www.pdok.nl" target="_blank" rel="noopener">PDOK / Kadaster BAG</a></span>
+  </div>
+</footer>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+$('#yr').textContent = new Date().getFullYear();
+
+const nf0 = new Intl.NumberFormat('nl-NL', {maximumFractionDigits:0});
+const nf1 = new Intl.NumberFormat('nl-NL', {maximumFractionDigits:1, minimumFractionDigits:0});
+const eur = v => '€ ' + nf0.format(Math.round(v / 10) * 10);
+const kw = v => nf1.format(v);
+
+let house = { address: null };
+
+/* ---------- heat emitters ---------- */
+// t = typical supply temperature on a design day (°C) for emitters sized for the current heat loss.
+// Ordinary radiators/convectors (high) are estimated from construction year and insulation instead, see supplyTemp().
+const AFG = {
+  rad:     { txt:'Gewone radiatoren',               t:60, high:true },
+  conv:    { txt:'Convectoren / convectorput',      t:60, high:true },
+  ltv:     { txt:'Lage-temperatuurradiatoren',      t:50 },
+  fancoil: { txt:'Ventiloconvectoren (fancoils)',   t:45 },
+  wand:    { txt:'Wandverwarming',                  t:40 },
+  vloer:   { txt:'Vloerverwarming',                 t:35 },
+  kachel:  { txt:'Los (houtkachel, elektrisch)',    t:0 },
+  geen:    { txt:'Geen / niet verwarmd',            t:0 },
+};
+const FLOOR_NAME = { 'afg-bg':'begane grond', 'afg-verd':'verdieping', 'afg-zolder':'zolder' };
+const AFG_DEFAULT = { 'afg-bg':'rad', 'afg-verd':'rad', 'afg-zolder':'geen' };
+$$('[data-afg]').forEach(sel => {
+  sel.innerHTML = Object.entries(AFG).map(([k, a]) => `<option value="${k}">${a.txt}</option>`).join('');
+  sel.value = AFG_DEFAULT[sel.id];
+});
+const resetAfg = () => $$('[data-afg]').forEach(sel => sel.value = AFG_DEFAULT[sel.id]);
+// Apartments are usually one level: clear the upper floors when switching to "appartement"
+$$('input[name=type]').forEach(r => r.addEventListener('change', () => {
+  if (r.value === 'app' && r.checked) { $('#afg-verd').value = 'geen'; $('#afg-zolder').value = 'geen'; }
+}));
+
+/* ---------- placement illustrations (inline SVG, themed via CSS) ---------- */
+const U = (x, y, w = 26, h = 18) => `<rect class="un" x="${x}" y="${y}" width="${w}" height="${h}" rx="2"/><circle class="fan" cx="${x + w * 0.62}" cy="${y + h / 2}" r="${h * 0.32}"/><path class="fan" d="M${x + 4} ${y + 5}h${w * 0.25}M${x + 4} ${y + 9}h${w * 0.25}M${x + 4} ${y + 13}h${w * 0.25}"/>`;
+const V = (x, y, h = 30, w = 14) => `<rect class="ve" x="${x}" y="${y}" width="${w}" height="${h}" rx="${w / 2.5}"/>`;
+const HOUSE = `<path class="ln" d="M18 72V38L48 16l30 22v34"/><path class="ln" d="M40 72V56h14v16"/>`;
+const GROUND = `<path class="gr" d="M6 72h108"/>`;
+const NO = `<path class="no" d="M86 22l20 20M106 22l-20 20"/>`;
+const ILL = {
+  buiten: {
+    grond:  ['Achter- of zijgevel, op de grond', HOUSE + GROUND + U(84, 54)],
+    gevel:  ['Aan de gevel, op beugels', HOUSE + GROUND + `<path class="ln" d="M78 50h12M78 44l8 6"/>` + U(80, 32)],
+    dak:    ['Op een plat dak', `<path class="ln" d="M22 72V36h76v36"/><path class="ln" d="M52 72V58h14v14"/>` + GROUND + U(46, 18)],
+    balkon: ['Op het balkon', `<path class="ln" d="M24 72V8h56v64"/><path class="ln" d="M80 46h26M106 46V32M80 32h26"/><path class="ln" d="M36 20h14v14H36zM36 52h14v14H36z"/>` + GROUND + U(82, 28, 20, 14)],
+    geen:   ['Geen geschikte plek buiten', HOUSE + GROUND + `<rect x="84" y="54" width="26" height="18" rx="2" fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-dasharray="3 3"/>` + NO],
+  },
+  binnen: {
+    zolder:  ['Zolder', `<path class="ln" d="M18 72V38L60 10l42 28v34"/><path class="ln" d="M24 42h72"/>` + GROUND + V(53, 18, 20, 12)],
+    berging: ['Bijkeuken of berging', `<path class="ln" d="M22 72V20h76v52"/><path class="ln" d="M32 72V40h18v32"/>` + GROUND + V(72, 36, 36)],
+    cvplek:  ['Op de plek van de cv-ketel', `<path class="ln" d="M22 72V10h76v62"/><rect class="ln" x="62" y="16" width="22" height="16" rx="2"/><path class="ln" d="M68 32v6M78 32v6"/>` + GROUND + V(65, 40, 32, 16)],
+    trapkast:['Trapkast', `<path class="ln" d="M16 72h14V60h14V48h14V36h14V24h14V12h14"/><path class="ln" d="M16 72V40"/>` + GROUND + V(26, 44, 28, 12)],
+    garage:  ['Garage of schuur', `<path class="ln" d="M16 72V30l44-16 44 16v42"/><path class="ln" d="M26 72V42h50v30M26 50h50M26 58h50M26 66h50"/>` + GROUND + V(84, 38, 34)],
+    geen:    ['Geen extra ruimte', `<path class="ln" d="M22 72V20h76v52"/>` + GROUND + `<rect x="54" y="36" width="14" height="36" rx="6" fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-dasharray="3 3"/>` + NO.replace(/M86 22l20 20M106 22l-20 20/, 'M76 26l20 20M96 26l-20 20')],
+  },
+};
+$$('[data-ill-group]').forEach(box => {
+  const g = box.dataset.illGroup;
+  box.innerHTML = Object.entries(ILL[g]).map(([v, [txt, svg]]) =>
+    `<label class="pick"><input type="checkbox" name="${g}" value="${v}"><span class="box"><svg class="ill" viewBox="0 0 120 80" aria-hidden="true">${svg}</svg>${txt}</span></label>`).join('');
+});
+// "geen" excludes the other choices
+$$('input[name=buiten], input[name=binnen]').forEach(el => el.addEventListener('change', () => {
+  if (!el.checked) return;
+  $$(`input[name=${el.name}]`).forEach(o => { if (o !== el && (el.value === 'geen') !== (o.value === 'geen')) o.checked = false; });
+}));
+
+/* ---------- defaults by construction year ---------- */
+// What a home of that era typically has as built (Bouwbesluit / EPC history). Retrofits are up to the user.
+function yearDefaults(y) {
+  if (y < 1975) return { iso: [], glas: 'dubbel', vent: 'natuurlijk' };
+  if (y < 1992) return { iso: ['dak', 'gevel'], glas: 'dubbel', vent: 'c' };
+  if (y < 2000) return { iso: ['dak', 'gevel', 'vloer'], glas: 'dubbel', vent: 'c' };
+  if (y < 2021) return { iso: ['dak', 'gevel', 'vloer'], glas: 'hrpp', vent: 'c' };
+  return { iso: ['dak', 'gevel', 'vloer'], glas: 'triple', vent: 'd' };
+}
+let isoTouched = false;
+$$('input[name=iso], #glas, #vent').forEach(el => el.addEventListener('change', () => { isoTouched = true; }));
+function applyYearDefaults() {
+  const y = +$('#bouwjaar').value;
+  if (!y || y < 1000 || isoTouched) return;
+  const d = yearDefaults(y);
+  $$('input[name=iso]').forEach(el => el.checked = d.iso.includes(el.value));
+  $('#glas').value = d.glas;
+  $('#vent').value = d.vent;
+  $('#isoHint').textContent = `Vooraf ingevuld op basis van bouwjaar ${y}. Is er later nog geïsoleerd, ander glas geplaatst of de ventilatie vervangen? Pas het dan aan.`;
+}
+$('#bouwjaar').addEventListener('change', applyYearDefaults);
+
+$$('input[name=bij]').forEach(el => el.addEventListener('change', () => {
+  $('#bijFreq').hidden = !$$('input[name=bij]:checked').length;
+}));
+
+/* ---------- navigation ---------- */
+function goHome(hash) {
+  document.body.classList.remove('in-wizard');
+  history.replaceState(null, '', hash || location.pathname);
+  if (hash) { const el = document.querySelector(hash); el && el.scrollIntoView(); } else scrollTo(0, 0);
+}
+/* ---------- stepper ---------- */
+const SUBS = [
+  { id: 'woning', lbl: 'Woning', check: i =>
+      !i.type ? 'Kies het type woning.'
+    : !i.opp || i.opp < 15 || i.opp > 1000 ? 'Vul een woonoppervlak in tussen 15 en 1000 m².'
+    : !i.bouwjaar && !i.label ? 'Vul het bouwjaar of het energielabel in.'
+    : i.bouwjaar && (i.bouwjaar < 1000 || i.bouwjaar > 2030) ? 'Controleer het bouwjaar.' : '' },
+  { id: 'isolatie', lbl: 'Isolatie', check: () => '' },
+  { id: 'verwarming', lbl: 'Verwarming', check: i => !i.afgifte.length ? 'Kies voor minstens één verdieping hoe die verwarmd wordt.' : '' },
+  { id: 'ruimte', lbl: 'Ruimte', check: () => '' },
+  { id: 'verbruik', lbl: 'Verbruik', check: i => i.gas && (i.gas < 50 || i.gas > 15000) ? 'Controleer je gasverbruik (in m³ per jaar).' : '' },
+];
+let sub = 0, maxSub = 0, inResult = false, hasResult = false;
+
+function renderProgress() {
+  const steps = ['Adres', ...SUBS.map(x => x.lbl), 'Advies'];
+  const active = inResult ? steps.length - 1 : sub + 1;
+  $('#progress').innerHTML = steps.map((lbl, k) => {
+    const cls = k === active ? 'active' : k < active || (k <= maxSub + 1 && k !== steps.length - 1) || (k === steps.length - 1 && hasResult) ? 'done' : '';
+    const can = k !== active && (k === 0 || (k <= SUBS.length && k - 1 <= maxSub) || (k === steps.length - 1 && hasResult));
+    const inner = `<span class="dot">${cls === 'done' ? '✓' : k + 1}</span><span class="lbl">${lbl}</span>`;
+    return `<li class="${cls}">${can ? `<button type="button" data-go="${k}" aria-label="Ga naar ${lbl}">${inner}</button>` : inner}</li>`;
+  }).join('');
+  $$('#progress [data-go]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.go;
+    if (k === 0) goHome();
+    else if (k === steps.length - 1) showStep(3);
+    else showStep(2, k - 1);
+  }));
+}
+function showSub() {
+  $$('.sub').forEach((el, k) => el.hidden = k !== sub);
+  $('#prevBtn').textContent = sub === 0 ? '← Adres' : `← ${SUBS[sub - 1].lbl}`;
+  $('#nextBtn').innerHTML = sub === SUBS.length - 1 ? 'Bekijk advies →' : `Volgende<span class="nx">: ${SUBS[sub + 1].lbl}</span> →`;
+  $('#houseErr').textContent = '';
+  updateInsight();
+}
+function showStep(n, toSub) {
+  document.body.classList.add('in-wizard');
+  inResult = n === 3;
+  $('#step2').hidden = inResult;
+  $('#step3').hidden = !inResult;
+  if (!inResult) { if (toSub != null) sub = toSub; showSub(); }
+  renderProgress();
+  scrollTo(0, 0);
+}
+$$('[data-home]').forEach(a => a.addEventListener('click', e => {
+  e.preventDefault();
+  const h = a.getAttribute('href');
+  goHome(h && h.length > 1 ? h : '');
+}));
+$$('[data-start]').forEach(a => a.addEventListener('click', e => {
+  e.preventDefault();
+  goHome();
+  $('#pc').focus();
+}));
+
+/* ---------- step 1: address lookup via PDOK ---------- */
+const normPc = s => s.toUpperCase().replace(/\s+/g, '');
+$('#manualLink').addEventListener('click', e => {
+  e.preventDefault();
+  house = { address: null };
+  fillFound(null);
+  maxSub = 0; lastChange = ''; prevCenter = null; deltaHtml = '';
+  showStep(2, 0);
+});
+
+$('#startForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pc = normPc($('#pc').value), hn = $('#hn').value.trim(), tv = $('#tv').value.trim().toUpperCase();
+  const err = $('#startErr');
+  err.textContent = '';
+  if (!/^[1-9]\d{3}[A-Z]{2}$/.test(pc)) { err.textContent = 'Vul een geldige postcode in, bijvoorbeeld 3511 LX.'; return; }
+  if (!/^\d{1,5}$/.test(hn)) { err.textContent = 'Vul een huisnummer in (alleen cijfers).'; return; }
+  const btn = $('#startBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Woning zoeken…';
+  try {
+    const info = await lookup(pc, hn, tv);
+    house = info;
+    fillFound(info);
+    maxSub = 0; lastChange = ''; prevCenter = null; deltaHtml = '';
+    showStep(2, 0);
+  } catch (ex) {
+    err.textContent = ex.message || 'Er ging iets mis bij het zoeken. Probeer het opnieuw of vul de gegevens zelf in.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Zoek mijn woning';
+  }
+});
+
+async function getJSON(url, ms = 8000) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(ms) });
+  if (!r.ok) throw new Error('Adresservice niet bereikbaar. Probeer het later of vul de gegevens zelf in.');
+  return r.json();
+}
+async function lookup(pc, hn, tv) {
+  const q = `postcode:${pc} and huisnummer:${hn}`;
+  const ls = await getJSON(`https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=${encodeURIComponent(q)}&fq=type:adres&rows=30&fl=weergavenaam,adresseerbaarobject_id,huisletter,huisnummertoevoeging,huis_nlt`);
+  let docs = (ls.response && ls.response.docs) || [];
+  if (!docs.length) throw new Error('We vinden dit adres niet. Controleer postcode en huisnummer, of vul de gegevens zelf in.');
+  let doc = docs[0];
+  if (tv) {
+    const m = docs.find(d => ((d.huisletter || '') + (d.huisnummertoevoeging || '')).toUpperCase().replace(/[-\s]/g, '') === tv.replace(/[-\s]/g, ''));
+    if (m) doc = m;
+  } else {
+    doc = docs.find(d => !d.huisletter && !d.huisnummertoevoeging) || docs[0];
+  }
+  const out = { address: doc.weergavenaam, opp: null, bouwjaar: null, units: null };
+  try {
+    const vo = await getJSON(`https://api.pdok.nl/kadaster/bag/ogc/v2/collections/verblijfsobject/items?f=json&identificatie=${doc.adresseerbaarobject_id}`);
+    const p = vo.features && vo.features[0] && vo.features[0].properties;
+    if (p) {
+      out.opp = p.oppervlakte || null;
+      out.gebruiksdoel = p.gebruiksdoel || null;
+      const href = p['pand.href'] && p['pand.href'][0];
+      if (href) {
+        const pand = await getJSON(href + (href.includes('?') ? '&' : '?') + 'f=json');
+        out.bouwjaar = pand.properties.bouwjaar || null;
+        out.units = pand.properties.aantal_verblijfsobjecten || null;
+        out.neighbours = await countNeighbours(pand).catch(() => null);
+      }
+    }
+  } catch (_) { /* BAG details optional */ }
+  const ep = await fetchLabel(doc.adresseerbaarobject_id);
+  if (ep) Object.assign(out, ep);
+  return out;
+}
+
+// Energy label + building type from RVO EP-Online, via the adresverkenner.nl proxy (keeps the API key off the client)
+const EP_PROXY_URL = 'https://adresverkenner.nl/helpers/ep-proxy.php';
+async function fetchLabel(bagid) {
+  try {
+    const d = await getJSON(`${EP_PROXY_URL}?bagid=${bagid}`, 6000);
+    if (d._httpStatus && d._httpStatus !== 200) return null;
+    const r = d['0'] || d;  // EP-Online sometimes wraps the record in an array
+    const label = r.Energieklasse || null;
+    return {
+      label: label && LABEL_WM2[label] ? label : null,
+      gebouwtype: r.Gebouwtype || null,
+      gebouwsubtype: r.Gebouwsubtype || null,
+      labelDatum: r.Opnamedatum || null,
+    };
+  } catch (_) { return null; }
+}
+
+// EP-Online gebouwtype → our four types
+function typeFromEP(t) {
+  if (!t) return null;
+  t = t.toLowerCase();
+  if (/appartement|flat|galerij|portiek|maisonnette/.test(t)) return 'app';
+  if (/vrijstaand/.test(t)) return 'vrij';
+  if (/tussen/.test(t)) return 'tussen';
+  if (/hoek|onder|kap/.test(t)) return 'hoek';
+  return null;
+}
+
+// Count BAG buildings that share a wall with ours (0 = vrijstaand, 1 = hoek/2-onder-1-kap, 2+ = tussen).
+// Small outbuildings (< 35 m²) such as sheds and garages are ignored.
+async function countNeighbours(pand) {
+  const ring = pand.geometry && pand.geometry.type === 'Polygon' ? pand.geometry.coordinates[0] : null;
+  if (!ring) return null;
+  const lat0 = ring[0][1], lon0 = ring[0][0], kx = Math.cos(lat0 * Math.PI / 180) * 111320, ky = 110540;
+  const toM = ([lon, lat]) => [(lon - lon0) * kx, (lat - lat0) * ky];
+  const lons = ring.map(c => c[0]), lats = ring.map(c => c[1]);
+  const pad = 0.00006;
+  const bbox = [Math.min(...lons) - pad, Math.min(...lats) - pad, Math.max(...lons) + pad, Math.max(...lats) + pad].join(',');
+  const res = await getJSON(`https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/items?f=json&limit=100&bbox=${bbox}`);
+  const mine = ring.map(toM);
+  const segDist = (p, a, b) => {
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+    const t = L ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L)) : 0;
+    return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+  };
+  const near = (pts, poly) => pts.filter(p => poly.some((a, k) => k < poly.length - 1 && segDist(p, a, poly[k + 1]) < 0.5)).length;
+  const area = poly => Math.abs(poly.reduce((s, a, k) => k < poly.length - 1 ? s + a[0] * poly[k + 1][1] - poly[k + 1][0] * a[1] : s, 0)) / 2;
+  let n = 0;
+  for (const f of res.features || []) {
+    if (f.properties.identificatie === pand.properties.identificatie) continue;
+    if (!f.geometry || f.geometry.type !== 'Polygon' || /gesloopt|ingetrokken|niet gerealiseerd/i.test(f.properties.status || '')) continue;
+    const other = f.geometry.coordinates[0].map(toM);
+    if (area(other) < 35) continue;
+    // a shared wall = at least two corner points of one building lying on the outline of the other
+    if (near(other, mine) >= 2 || near(mine, other) >= 2) n++;
+  }
+  return n;
+}
+
+function fillFound(info) {
+  const box = $('#foundBox');
+  if (!info || !info.address) {
+    box.innerHTML = `<div class="found warn"><span>✍️</span><div>Je vult de gegevens zelf in. Weet je het bouwjaar niet precies? Een schatting is prima.</div></div>`;
+    return;
+  }
+  // Woningtype: EP-Online first, then BAG (multiple units → apartment, else touching neighbours)
+  let type = typeFromEP(info.gebouwtype), typeSrc = type ? 'energielabel' : null;
+  if (!type && info.units > 2) { type = 'app'; typeSrc = 'BAG'; }
+  if (!type && info.neighbours != null) { type = info.neighbours === 0 ? 'vrij' : info.neighbours === 1 ? 'hoek' : 'tussen'; typeSrc = 'BAG-kaart'; }
+  house.appSub = type === 'app' ? info.gebouwsubtype : null;
+
+  const bag = [], ep = [];
+  if (info.bouwjaar) bag.push(`bouwjaar ${info.bouwjaar}`);
+  if (info.opp) bag.push(`${info.opp} m²`);
+  if (typeSrc && typeSrc !== 'energielabel') bag.push(`${TYPE_TXT[type].toLowerCase()} (afgeleid)`);
+  if (info.label) ep.push(`label ${info.label}${info.labelDatum ? ' (opname ' + new Date(info.labelDatum).getFullYear() + ')' : ''}`);
+  if (typeSrc === 'energielabel') ep.push(esc(info.gebouwtype.toLowerCase()) + (info.gebouwsubtype ? ', ' + esc(info.gebouwsubtype.toLowerCase()) : ''));
+  const lines = [];
+  lines.push(bag.length ? 'Uit de BAG: ' + bag.join(', ') + '.' : 'Geen bouwjaar of oppervlak gevonden, vul ze hieronder in.');
+  if (info.gebruiksdoel && !/woon/.test(info.gebruiksdoel)) lines.push(`<strong>Let op:</strong> volgens de BAG is dit geen woning (${esc(info.gebruiksdoel)}). De scan is bedoeld voor woningen.`);
+  lines.push(ep.length ? 'Uit EP-Online: ' + ep.join(', ') + '.' : 'Geen geregistreerd energielabel gevonden.');
+  box.innerHTML = `<div class="found"><span>📍</span><div><strong>${esc(info.address)}</strong><br><span class="muted">${lines.join('<br>')}</span></div></div>`;
+
+  if (info.bouwjaar && info.bouwjaar > 1000) $('#bouwjaar').value = info.bouwjaar;
+  if (info.opp) $('#opp').value = info.opp;
+  $('#label').value = info.label || '';
+  if (type) {
+    const r = document.querySelector(`input[name=type][value=${type}]`); r.checked = true;
+    if (type === 'app') { $('#afg-verd').value = 'geen'; $('#afg-zolder').value = 'geen'; }
+  }
+  isoTouched = false;
+  applyYearDefaults();
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- form state ---------- */
+const val = n => { const x = document.querySelector(`input[name=${n}]:checked`); return x ? x.value : null; };
+function readInputs() {
+  return {
+    type: val('type'),
+    bouwjaar: +$('#bouwjaar').value || null,
+    opp: +$('#opp').value || null,
+    label: $('#label').value || null,
+    iso: $$('input[name=iso]:checked').map(x => x.value),
+    glas: $('#glas').value,
+    vent: $('#vent').value,
+    afgifte: $$('[data-afg]').map(el => ({ floor: FLOOR_NAME[el.id], type: el.value, share: +el.dataset.afg })).filter(x => x.type !== 'geen'),
+    pers: +val('pers') || 2,
+    koken: val('koken'),
+    bij: $$('input[name=bij]:checked').map(x => x.value),
+    bijfreq: val('bijfreq'),
+    appSub: house.appSub || null,
+    gas: +$('#gas').value || null,
+    gasprijs: +$('#gasprijs').value || 1.35,
+    stroomprijs: +$('#stroomprijs').value || 0.28,
+    ketelLeeftijd: $('#ketelLeeftijd').value || null,
+    ketelTemp: +$('#ketelTemp').value || null,
+    buiten: $$('input[name=buiten]:checked').map(x => x.value),
+    binnen: $$('input[name=binnen]:checked').map(x => x.value),
+    buren: val('buren'),
+    leiding: $('#leiding').value,
+    aansluiting: $('#aansluiting').value,
+    monument: val('monument'),
+    bodem: val('bodem'),
+    koeling: val('koeling'),
+  };
+}
+
+$('#houseForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const inp = readInputs();
+  const msg = SUBS[sub].check(inp);
+  if (msg) { $('#houseErr').textContent = msg; return; }
+  if (sub < SUBS.length - 1) {
+    sub++; maxSub = Math.max(maxSub, sub);
+    showStep(2);
+    return;
+  }
+  // Final step: re-check everything, the user may have jumped back and changed things
+  const bad = SUBS.findIndex(x => x.check(inp));
+  if (bad >= 0) { showStep(2, bad); $('#houseErr').textContent = SUBS[bad].check(inp); return; }
+  renderResult(inp, calc(inp));
+  hasResult = true;
+  showStep(3);
+});
+$('#prevBtn').addEventListener('click', () => { if (sub === 0) goHome(); else showStep(2, sub - 1); });
+
+/* ---------- live insight ---------- */
+let prevCenter = null, lastChange = '', deltaHtml = '';
+function describeChange(el) {
+  const field = el.closest('.field');
+  const q = field && field.querySelector(':scope > label, :scope > .lbl, label.hint');
+  const qTxt = q ? q.textContent.replace(/\?$/, '').trim() : '';
+  if (el.type === 'checkbox') return `${el.parentElement.textContent.trim()} ${el.checked ? 'aangevinkt' : 'uitgevinkt'}`;
+  if (el.type === 'radio') return `${qTxt}: ${el.parentElement.textContent.trim().toLowerCase()}`;
+  if (el.tagName === 'SELECT') return `${qTxt}: ${el.options[el.selectedIndex].text.toLowerCase()}`;
+  return `${qTxt}: ${el.value}`;
+}
+let insightTimer;
+['change', 'input'].forEach(ev => $('#houseForm').addEventListener(ev, e => {
+  if (!e.target.matches('input, select')) return;
+  if (ev === 'input' && e.target.type !== 'number') return;
+  lastChange = describeChange(e.target);
+  clearTimeout(insightTimer);
+  insightTimer = setTimeout(() => updateInsight(true), ev === 'input' ? 250 : 0);
+}));
+
+const enough = i => i.type && i.opp >= 15 && i.opp <= 1000 && ((i.bouwjaar >= 1000 && i.bouwjaar <= 2030) || i.label);
+const signed = v => (v > 0 ? '+' : '−') + nf1.format(Math.abs(Math.round(v * 10) / 10));
+
+function explain(i, r) {
+  const T = TYPE_TXT[i.type].toLowerCase();
+  const p = [];
+  if (SUBS[sub].id === 'woning') {
+    p.push(`Een ${T}${i.bouwjaar ? ' uit ' + i.bouwjaar : ''} verliest op een koude dag ongeveer <b>${Math.round(r.wm2 * r.tf)} W per m²</b>. Met ${nf0.format(i.opp)} m² is dat ± ${kw(Math.round(r.kwModel * 10) / 10)} kW, plus een toeslag om na de nacht weer op te warmen.`);
+    if (i.label) p.push(`Je energielabel (${i.label}) weegt zwaarder dan het bouwjaar: het zegt meer over hoe je huis er nu voor staat.`);
+    p.push({ app: 'Een appartement heeft buren rondom en verliest daardoor het minst. Ligt het onder het dak of op de begane grond, dan is het verlies groter.',
+             tussen: 'Een tussenwoning deelt twee muren met de buren en verliest daardoor ± 12% minder dan een hoekwoning.',
+             hoek: 'Een hoekwoning of 2-onder-1-kap heeft één buurmuur. Dit is ons referentietype.',
+             vrij: 'Een vrijstaande woning heeft de meeste buitenmuur en verliest ± 18% meer dan een hoekwoning.' }[i.type]);
+  } else if (SUBS[sub].id === 'isolatie') {
+    const pct = Math.round((r.f - 1) * 100);
+    p.push(pct === 0 ? `Je isolatie, glas en ventilatie zijn gemiddeld voor ${i.bouwjaar ? 'het bouwjaar ' + i.bouwjaar : 'dit label'}. Daar hebben we al rekening mee gehouden.`
+      : `Ten opzichte van een gemiddelde woning uit ${i.bouwjaar || 'deze tijd'} verliest jouw huis <b>${Math.abs(pct)}% ${pct < 0 ? 'minder' : 'meer'}</b> warmte door isolatie, glas en ventilatie.`);
+    if (i.label) p.push('Omdat je een energielabel hebt, tellen deze keuzes minder zwaar mee: het label bevat ze al grotendeels.');
+    p.push('Vuistregel: gevel- en dakisolatie leveren het meeste op, elk 13–15%. Balansventilatie met warmteterugwinning scheelt ± 10%.');
+  } else if (SUBS[sub].id === 'verwarming') {
+    p.push(`${r.limiting.length ? 'De ' + r.limiting.join(' en ') + ' bepaalt' : 'Je afgifte bepaalt'} de aanvoertemperatuur: ± <b>${r.supplyT} °C</b> op een koude dag. Daarbij hoort een seizoensrendement van ± ${nf1.format(r.scop)}: van elke kWh stroom maakt de warmtepomp ${nf1.format(r.scop)} kWh warmte.`);
+    p.push(r.supplyT <= 45 ? 'Dat is ideaal voor een warmtepomp.' : r.supplyT <= 55 ? 'Dat kan een warmtepomp goed. Elke 5 °C lager scheelt ± 10% stroom.' : 'Dat is aan de hoge kant. Grotere radiatoren of betere isolatie op de koudste verdieping maken de warmtepomp flink zuiniger.');
+    if (i.ketelTemp) p.push(`Je ketel staat op ${i.ketelTemp} °C en je huis wordt warm, dus meer dan ${i.ketelTemp} °C is in elk geval niet nodig.`);
+    if (i.bij.length) p.push('Bijverwarming neemt een deel van de warmte over. Daarom corrigeren we straks je gasverbruik naar boven.');
+  } else if (SUBS[sub].id === 'ruimte') {
+    const html = placementCard(i, r);
+    const n = c => (html.match(new RegExp(`<li class="${c}"`, 'g')) || []).length;
+    p.push(`Plaatsing: <b>${n('ok')} in orde</b>, ${n('let')} aandachtspunt${n('let') === 1 ? '' : 'en'}${n('stop') ? `, <b>${n('stop')} knelpunt${n('stop') === 1 ? '' : 'en'}</b>` : ''}. Details zie je bij je advies.`);
+    if (i.buiten.includes('geen')) p.push(r.bodemOk ? 'Zonder buitenunit blijft een bodemwarmtepomp over, of een ventilatiewarmtepomp.' : 'Zonder buitenunit en bodembron zijn de mogelijkheden beperkt. Een ventilatiewarmtepomp of collectieve oplossing kan dan uitkomst bieden.');
+    else if (r.bodemOk && i.bodem === 'ja') p.push(`Een bodemwarmtepomp haalt een rendement van ± ${nf1.format(r.scopBodem)} tegen ± ${nf1.format(r.scop)} voor lucht-water, maar kost meer.`);
+    if (i.buren === 'dicht') p.push('Dicht bij de buren is geluid het grootste aandachtspunt.');
+  } else {
+    if (r.kwGas) {
+      const d = Math.abs(r.kwGas - r.kwModel) / r.kwModel;
+      p.push(`Volgens je gasverbruik heeft je huis ± <b>${kw(Math.round(r.kwGas * 10) / 10)} kW</b> nodig, volgens de woningkenmerken ± ${kw(Math.round(r.kwModel * 10) / 10)} kW. ${d < 0.2 ? 'Die liggen dicht bij elkaar, dus de range is betrouwbaar.' : d < 0.4 ? 'Een redelijk verschil. We combineren ze en maken de range iets breder.' : 'Een groot verschil. Mogelijk stook je zuiniger of juist ruimer dan gemiddeld, of klopt een van de woninggegevens niet.'}`);
+      p.push(`Van je gas gaat ± ${nf0.format(r.tapM3)} m³ naar warm water${i.koken === 'gas' ? ' en koken' : ''}. Dat telt niet mee voor het vermogen.`);
+    } else p.push('Vul je gasverbruik in om de uitkomst te toetsen aan je werkelijke verbruik. Zonder is de range breder.');
+  }
+  return p.map(x => `<p>${x}</p>`).join('');
+}
+
+function updateInsight(fromChange) {
+  const box = $('#insight');
+  const i = readInputs();
+  if (!enough(i)) {
+    box.innerHTML = `<h3>Jouw tussenstand</h3><p class="empty">Vul het woningtype, het bouwjaar (of energielabel) en het oppervlak in. Dan zie je hier meteen welk vermogen je huis nodig heeft, en wat elke keuze daaraan verandert.</p>`;
+    prevCenter = null; deltaHtml = '';
+    return;
+  }
+  if (!i.afgifte.length) i.afgifte = [{ floor: 'begane grond', type: 'rad', share: 1 }];
+  const r = calc(i);
+  const center = (r.lo + r.hi) / 2;
+  // Only a user edit produces a "what did this change" line; navigating between steps keeps the last one
+  if (fromChange && lastChange && prevCenter != null) {
+    const delta = center - prevCenter;
+    deltaHtml = Math.abs(delta) >= 0.05
+      ? `<div class="ins-delta"><b>${esc(lastChange)}</b><br><span class="${delta > 0 ? 'up' : 'down'}">${signed(delta)} kW</span> benodigd vermogen</div>`
+      : `<div class="ins-delta"><b>${esc(lastChange)}</b><br>geen invloed op het vermogen${sub >= 2 ? ', wel op het advies' : ''}</div>`;
+  }
+  prevCenter = center;
+  const max = Math.max(8, Math.ceil(r.hi + 2));
+  const rows = [['Warmteverlies', `± ${Math.round(r.wm2 * r.f * r.tf)} W/m²`]];
+  if (sub >= 2) rows.push(['Aanvoertemperatuur', `± ${r.supplyT} °C`], ['Rendement (SCOP)', `± ${nf1.format(r.scop)}`]);
+  if (sub >= 2) rows.push(['Richting', { ae: 'All-electric', 'ae-check': 'All-electric (check radiatoren)', hyb: 'Hybride', 'hyb-iso': 'Eerst isoleren, dan hybride' }[r.advies]]);
+  if (sub >= 4) rows.push(['Nauwkeurigheid', r.accuracy]);
+  box.innerHTML = `
+    <h3>Jouw tussenstand</h3>
+    <div class="ins-kw tnum">${kw(r.lo)} – ${kw(r.hi)}<small>kW</small></div>
+    <div class="hint">benodigd vermogen bij −10 °C</div>
+    <div class="ins-bar" aria-hidden="true"><i style="left:${r.lo / max * 100}%;width:${(r.hi - r.lo) / max * 100}%"></i></div>
+    ${deltaHtml}
+    <dl class="kv tnum">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+    <div class="ins-explain"><h4>Wat betekent dit?</h4>${explain(i, r)}</div>`;
+}
+
+/* ---------- the model ---------- */
+// Specific design heat loss (W/m² floor area, at -10 °C outside / 20 °C inside), for a semi-detached reference home.
+const LABEL_WM2 = { 'A++++':22, 'A+++':25, 'A++':28, 'A+':32, 'A':38, 'B':47, 'C':56, 'D':66, 'E':76, 'F':86, 'G':98 };
+function bouwjaarWm2(y) {
+  if (y < 1930) return 100;
+  if (y < 1946) return 94;
+  if (y < 1965) return 88;
+  if (y < 1975) return 80;
+  if (y < 1983) return 68;
+  if (y < 1992) return 60;
+  if (y < 2006) return 50;
+  if (y < 2015) return 42;
+  if (y < 2021) return 34;
+  return 28;
+}
+const TYPE_F = { app:0.78, tussen:0.88, hoek:1.0, vrij:1.18 };
+const TYPE_TXT = { app:'Appartement', tussen:'Tussenwoning', hoek:'Hoekwoning / 2-onder-1-kap', vrij:'Vrijstaande woning' };
+const BIJ_TXT = { gashaard:'gashaard', hout:'houtkachel', airco:'airco', elek:'elektrische kachel' };
+const BIJ_FREQ_TXT = { af:'af en toe', vaak:'regelmatig', dag:'bijna dagelijks' };
+const HOURS = 1700;        // equivalent full-load hours at design conditions (NL installer practice: 1600–1800)
+const OPWARM = 1.1;        // reheat allowance after night setback / absence (ISSO 51 opwarmtoeslag)
+const KWH_PER_M3 = 9.77;   // Groningen-gas calorific value (bovenwaarde ≈ 35.17 MJ/m³ → onderwaarde 31.65)
+const BOILER_EFF = 0.9;   // modern HR boiler; older boilers are less efficient, see calc()
+
+function calc(i) {
+  const basis = [];
+  let wm2, src;
+  if (i.label) { wm2 = LABEL_WM2[i.label]; src = `energielabel ${i.label}`; }
+  else { wm2 = bouwjaarWm2(i.bouwjaar); src = `bouwjaar ${i.bouwjaar}`; }
+  basis.push([`Warmteverlies per m² (${src})`, `${wm2} W/m²`]);
+
+  // Old homes where the user reports post-insulation: adjust. With a label, effects are mostly baked in → half weight.
+  // Insulation and glazing count relative to what's typical for the construction year (already in the W/m²).
+  // With a label they are mostly baked in already → 40% weight.
+  const w = i.label ? 0.4 : 1;
+  const def = i.bouwjaar ? yearDefaults(i.bouwjaar) : { iso: i.iso, glas: i.glas, vent: i.vent };
+  const ISO_F = { dak:0.13, gevel:0.15, vloer:0.07 };
+  let f = 1;
+  for (const k in ISO_F) {
+    const has = i.iso.includes(k), typical = def.iso.includes(k);
+    if (has && !typical) f *= 1 - ISO_F[k] * w;
+    if (!has && typical) f *= 1 + ISO_F[k] * 0.8 * w;
+  }
+  const GLAS_F = { enkel:1.14, dubbel:1, hrpp:0.93, triple:0.89 };
+  f *= 1 + (GLAS_F[i.glas] / GLAS_F[def.glas] - 1) * w;
+  const VENT_F = { natuurlijk:1.05, c:1, "c-vraag":0.95, d:0.9 };
+  f *= 1 + (VENT_F[i.vent] / VENT_F[def.vent] - 1) * w;
+  basis.push(['Correctie isolatie, glas en ventilatie', `× ${f.toFixed(2).replace(".", ",")}`]);
+  // Apartments: position matters (roof, ground floor, corner). EP-Online subtypes like "Hoekdak", "Tussenmidden".
+  let tf = TYPE_F[i.type], typeTxt = TYPE_TXT[i.type].toLowerCase();
+  if (i.type === 'app' && i.appSub) {
+    const s = i.appSub.toLowerCase();
+    tf = 0.66 + (/hoek/.test(s) ? 0.1 : 0) + (/dak/.test(s) ? 0.12 : 0) + (/vloer/.test(s) ? 0.08 : 0);
+    typeTxt += ', ' + s;
+  }
+  tf = Math.round(tf * 100) / 100;
+  basis.push([`Correctie woningtype (${typeTxt})`, `× ${tf.toFixed(2).replace(".", ",")}`]);
+
+  const kwModel = wm2 * f * tf * i.opp / 1000;
+  basis.push(['Vermogen volgens woningkenmerken', `${kw(Math.round(kwModel*10)/10)} kW`]);
+
+  // Domestic hot water & cooking gas, to separate from space heating
+  const tapM3 = 70 + 55 * Math.min(i.pers, 6);
+  const kookM3 = i.koken === 'gas' ? 35 : 0;
+  // Supplementary heating hides part of the heat demand from the gas meter (wood, airco, electric),
+  // or burns gas at lower efficiency than the boiler (gas fire). Share of heat taken over, per source:
+  const freq = { af:0.05, vaak:0.15, dag:0.3 }[i.bijfreq] || 0;
+  const nonGas = Math.min(0.5, i.bij.filter(b => b !== 'gashaard').length * freq);
+  const bijF = (1 + nonGas) * (i.bij.includes('gashaard') ? 1 - freq * 0.25 : 1);
+  // Older boilers turn less of the gas into heat (pre-2005 boilers: often ±85%, older VR/non-condensing ±80%)
+  const eff = { '15': 0.87, '20': 0.83 }[i.ketelLeeftijd] || BOILER_EFF;
+  let kwGas = null, spaceHeatKwh;
+  if (i.gas && i.gas > tapM3 + kookM3 + 50) {
+    const spaceM3 = i.gas - tapM3 - kookM3;
+    spaceHeatKwh = spaceM3 * KWH_PER_M3 * eff;
+    if (eff !== BOILER_EFF) basis.push(['Rendement huidige ketel (leeftijd)', `${Math.round(eff * 100)}%`]);
+    basis.push([`Ruimteverwarming uit gasverbruik (${nf0.format(i.gas)} − ${nf0.format(tapM3 + kookM3)} m³ voor warm water${kookM3 ? '/koken' : ''})`, `${nf0.format(spaceM3)} m³`]);
+    if (bijF !== 1) {
+      spaceHeatKwh *= bijF;
+      basis.push([`Correctie bijverwarming (${i.bij.map(b => BIJ_TXT[b]).join(', ')}, ${BIJ_FREQ_TXT[i.bijfreq]})`, `× ${bijF.toFixed(2).replace(".", ",")}`]);
+    }
+    kwGas = spaceHeatKwh / HOURS;
+    basis.push(['Vermogen volgens gasverbruik', `${kw(Math.round(kwGas*10)/10)} kW`]);
+  } else {
+    spaceHeatKwh = kwModel * HOURS;
+  }
+
+  let center, lo, hi, accuracy;
+  if (kwGas) {
+    // The more heat comes from other sources, the less we trust the gas meter
+    const wg = nonGas <= 0.05 ? 0.6 : nonGas <= 0.15 ? 0.45 : 0.3;
+    center = wg * kwGas + (1 - wg) * kwModel;
+    const spread = Math.abs(kwGas - kwModel) / center;
+    const band = Math.min(0.28, 0.1 + spread / 3 + nonGas / 4);
+    lo = center * (1 - band); hi = center * (1 + band);
+    accuracy = spread < 0.25 && nonGas <= 0.15 ? 'hoog' : 'gemiddeld';
+    spaceHeatKwh = wg * spaceHeatKwh + (1 - wg) * kwModel * HOURS;
+  } else {
+    center = kwModel;
+    lo = center * 0.82; hi = center * 1.18;
+    accuracy = i.label ? 'gemiddeld' : 'indicatief';
+  }
+  // Design capacity includes a reheat allowance on top of the steady-state heat loss
+  center *= OPWARM; lo *= OPWARM; hi *= OPWARM;
+  basis.push(['Opwarmtoeslag (weer op temperatuur na nachtverlaging)', `× ${OPWARM.toFixed(2).replace('.', ',')}`]);
+  const round5 = v => Math.max(1.5, Math.round(v * 2) / 2);
+  lo = round5(lo); hi = round5(hi); if (hi - lo < 1) hi = lo + 1;
+
+  // Hybrid: covers ~50–60% of design load → ±75–85% of annual heat
+  const hLo = Math.max(2, Math.round(lo * 0.45 * 2) / 2);
+  const hHi = Math.max(hLo + 1, Math.round(hi * 0.6 * 2) / 2);
+
+  // Tap water vessel
+  const boiler = i.pers <= 1 ? 150 : i.pers <= 3 ? 200 : i.pers <= 4 ? 250 : 300;
+
+  // Suitability
+  const wm2eff = wm2 * f;
+  // Central emitters (a stove or electric heater doesn't set the supply temperature)
+  const central = i.afgifte.filter(a => AFG[a.type].t);
+  const highFloors = central.filter(a => AFG[a.type].high).map(a => a.floor);
+  // Supply temperature needed on a design day, per floor. Ordinary radiators were sized for the heat loss
+  // at construction (≤1990: 90/70, ≤2005: 80/60, later 70/50) with ±40% margin; insulation since then
+  // makes them relatively larger. Radiator output ∝ ΔT^1.3.
+  const ratio = i.bouwjaar ? wm2eff / bouwjaarWm2(i.bouwjaar) : 0.85;
+  const floorLoad = wm2eff * tf;
+  const supplyTemp = type => {
+    if (AFG[type].high) {
+      const dT0 = !i.bouwjaar ? 50 : i.bouwjaar < 1990 ? 60 : i.bouwjaar < 2005 ? 50 : 40;
+      return Math.round(20 + dT0 * Math.pow(Math.min(1.2, ratio) / 1.4, 1 / 1.3) + 4);
+    }
+    if (type === 'vloer') return floorLoad > 70 ? 45 : floorLoad > 50 ? 40 : 35;
+    return AFG[type].t;
+  };
+  // The boiler setpoint is evidence: if the house stays warm at that setting, radiators need at most that.
+  const ketelT = i.ketelTemp || 70;
+  const floorTemps = central.map(a => ({ ...a, t: AFG[a.type].high ? Math.min(supplyTemp(a.type), ketelT) : supplyTemp(a.type) }));
+  const supplyT = floorTemps.length ? Math.max(...floorTemps.map(a => a.t)) : 55;
+  const limiting = floorTemps.filter(a => a.t === supplyT).map(a => a.floor);
+  const lowTemp = supplyT <= 55;
+  let advies, redenen = [];
+  if (wm2eff <= 55 && lowTemp) { advies = 'ae'; }
+  else if (wm2eff <= 55 && !lowTemp) { advies = 'ae-check'; }
+  else if (wm2eff <= 72) { advies = 'hyb'; }
+  else { advies = 'hyb-iso'; }
+  if (i.type === 'app' && advies.startsWith('ae')) redenen.push('Bij een appartement heb je toestemming van de VvE nodig voor een buitenunit. Vraag dit vroeg na.');
+
+  // Seasonal COP falls roughly linearly with the design supply temperature (warmest floor sets it for the whole house).
+  // The hybrid leaves the coldest days to the boiler, so it suffers less from high temperatures.
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const scop = Math.round(clamp(4.4 - (supplyT - 35) * 0.055, 2.6, 4.4) * 10) / 10;
+  const scopHyb = Math.round(clamp(4.2 - (supplyT - 35) * 0.036, 3.0, 4.2) * 10) / 10;
+  const tapHeatKwh = tapM3 * KWH_PER_M3 * eff;
+  const gasNu = i.gas || Math.round(spaceHeatKwh / KWH_PER_M3 / eff + tapM3 + kookM3);
+
+  // All-electric: everything electric incl. tap water (COP ~2.6), cooking goes to induction (ignored)
+  const aeKwh = spaceHeatKwh / scop + tapHeatKwh / 2.6;
+  const aeGasSaved = gasNu;
+  const vastrecht = 290; // gas connection standing charge + network costs per year (indicatief)
+  const aeSave = aeGasSaved * i.gasprijs + vastrecht - aeKwh * i.stroomprijs;
+
+  const hybShare = 0.78; // share of space heat by the heat pump
+  const hybKwh = spaceHeatKwh * hybShare / scopHyb;
+  const hybGasSaved = spaceHeatKwh * hybShare / KWH_PER_M3 / eff;
+  const hybSave = hybGasSaved * i.gasprijs - hybKwh * i.stroomprijs;
+
+  // Ground-source (brine/water): source at ±10 °C all year → higher SCOP than air-water at the same supply temperature
+  const bodemOk = i.type !== 'app' && i.bodem !== 'nee';
+  const scopBodem = Math.round(clamp(5.2 - (supplyT - 35) * 0.05, 3.4, 5.2) * 10) / 10;
+  const bodemKwh = spaceHeatKwh / scopBodem + tapHeatKwh / 3.0;
+  const bodemSave = gasNu * i.gasprijs + vastrecht - bodemKwh * i.stroomprijs;
+  // Borehole length: extracted heat ≈ 75% of capacity, ±45 W per metre of borehole (sandy/clay soil, NL average)
+  const bron = [lo, hi].map(k => Math.round(k * 0.75 / 0.045 / 10) * 10);
+
+  // Costs (installed, incl. VAT, indicatief 2026)
+  const aeCost = [7500 + 650 * lo, 10000 + 800 * hi];
+  const hybCost = [3000 + 350 * hLo, 4800 + 500 * hHi];
+  const bodemCost = [15000 + 1300 * lo, 20000 + 1800 * hi];
+  // ISDE indicatie
+  const isdeAE = [Math.round(1000 + 225 * (lo - 1)), Math.round(1000 + 225 * (hi - 1))];
+  const isdeBodem = [Math.round(2500 + 300 * (lo - 1)), Math.round(2500 + 300 * (hi - 1))];
+  const isdeHyb = [Math.round(1000 + 225 * Math.max(0, hLo - 1)), Math.round(1000 + 225 * (hHi - 1))];
+
+  return { wm2, f, tf, kwModel, kwGas, nonGas, bodemOk, scopBodem, bodemKwh, bodemSave, bron, bodemCost, isdeBodem, eff, ketelT, supplyT, limiting, floorTemps, highFloors, central, lo, hi, hLo, hHi, center, accuracy, boiler, advies, redenen, scop, scopHyb, wm2eff,
+    aeKwh, aeSave, hybKwh, hybSave, hybGasSaved, aeGasSaved, gasNu, aeCost, hybCost, isdeAE, isdeHyb, basis, spaceHeatKwh, tapM3 };
+}
+
+/* ---------- render ---------- */
+function payback(cost, isde, save) {
+  const net = (cost[0] + cost[1]) / 2 - (isde[0] + isde[1]) / 2;
+  if (save <= 0) return 'n.v.t.';
+  const y = net / save;
+  return y > 30 ? '> 30 jaar' : `± ${nf0.format(Math.round(y))} jaar`;
+}
+
+function ltvCard(i, r) {
+  if (!r.central.length) return '';
+  const T = r.supplyT, where = r.limiting.join(' en ');
+  const onlyHigh = r.highFloors.length > 0;
+  let title, text, color;
+  if (T <= 45) { title = 'Lage-temperatuurverwarming: goed haalbaar'; color = 'var(--ok)';
+    text = 'Je afgiftesysteem kan je huis ook op een koude dag warm houden met water van maximaal 45 °C. Dat is ideaal voor een warmtepomp.'; }
+  else if (T <= 55) { title = 'Lage-temperatuurverwarming: haalbaar'; color = 'var(--ok)';
+    text = `Naar schatting is op een koude dag ongeveer ${T} °C nodig${where ? ' (bepaald door de ' + where + ')' : ''}. Dat kan een warmtepomp goed leveren. Het grootste deel van het jaar is het buiten minder koud en volstaat 35–45 °C.`; }
+  else if (T <= 65) { title = 'Lage-temperatuurverwarming: haalbaar met aanpassingen'; color = 'var(--accent)';
+    text = `Naar schatting is op een koude dag ongeveer ${T} °C nodig${where ? ' op de ' + where : ''}. Met een paar gerichte aanpassingen kom je onder de 55 °C.`; }
+  else { title = 'Lage-temperatuurverwarming: waarschijnlijk nog niet haalbaar'; color = 'var(--warn)';
+    text = `Naar schatting is op een koude dag ongeveer ${T} °C nodig${where ? ' op de ' + where : ''}. Dat is te warm voor een efficiënte all-electric warmtepomp. Een hybride warmtepomp werkt wel: de ketel neemt de koudste dagen over.`; }
+
+  const acts = [];
+  if (onlyHigh && i.ketelTemp && i.ketelTemp > 60) acts.push(`<li><strong>Zet je ketel lager.</strong> Je ketel staat op ${i.ketelTemp} °C. Een HR-ketel is pas echt zuinig als het retourwater onder ± 55 °C blijft. Probeer 60 °C: dat bespaart nu al gas, en je ontdekt meteen of je huis dan warm blijft.</li>`);
+  if (onlyHigh && T > 45) acts.push(`<li><strong>Doe de 55 °C-test.</strong> Zet de aanvoertemperatuur van je cv-ketel op een koude dag op 55 °C (of lager). Blijven alle kamers op temperatuur? Dan is je huis klaar voor lage-temperatuurverwarming. Wordt één kamer niet warm, dan weet je precies waar je iets moet doen.</li>`);
+  if (T > 55 && onlyHigh) acts.push(`<li><strong>Vervang de radiatoren in de koudste kamers</strong> door grotere of lage-temperatuurradiatoren. Vaak gaat het om 2 of 3 kamers, niet het hele huis.</li>`,
+    `<li><strong>Radiatorventilatoren</strong> (± € 50–100 per radiator) blazen lucht langs de radiator en verhogen de afgifte met 20–40%. Een goedkope eerste stap.</li>`);
+  if (T > 55) acts.push(`<li><strong>Isoleren verlaagt de benodigde temperatuur.</strong> Elke 10% minder warmteverlies scheelt ongeveer 3–4 °C in aanvoertemperatuur.</li>`);
+  if (r.central.some(a => a.type === 'vloer')) {
+    // Mixing can go only if the other floors don't need (much) warmer water than the floor heating
+    const vloerT = Math.max(...r.floorTemps.filter(a => a.type === 'vloer').map(a => a.t));
+    const otherT = Math.max(0, ...r.floorTemps.filter(a => a.type !== 'vloer').map(a => a.t));
+    const allLow = otherT <= vloerT + 5;
+    acts.push(`<li><strong>Laat de vloerverwarmingsverdeler controleren.</strong> Bij een cv-ketel mengt een pompgroep het hete ketelwater (60–80 °C) met koud retourwater tot ± 35–40 °C. Een warmtepomp levert zelf al lauw water. Mengen verlaagt de temperatuur en het debiet dan nog verder, waardoor de vloer niet warm genoeg wordt en de warmtepomp onnodig hard werkt. ${allLow
+      ? 'Omdat je nergens hoge temperatuur nodig hebt, kan de mengklep of pompgroep er meestal uit en wordt de verdeler direct op de warmtepomp aangesloten.'
+      : `Je andere verdiepingen hebben warmer water nodig (± ${otherT} °C) dan de vloer (± ${vloerT} °C), dus mengen blijft nodig. Kies dan een pompgroep met een weersafhankelijke of elektronische mengregeling in plaats van een vaste thermostatische klep.`} Reken op ± € 500–1.500 voor aanpassen of vervangen, en laat de groepen meteen opnieuw inregelen.</li>`);
+  }
+  if (r.floorTemps.some(a => a.type === 'vloer' && a.t > 35)) acts.push(`<li><strong>Vloerverwarming op de grens.</strong> Het warmteverlies per m² is hoog voor vloerverwarming, waardoor die warmer moet draaien dan ideaal. Extra isolatie of een aanvullende radiator in de koudste ruimte helpt.</li>`);
+  if (T <= 55 && r.central.some(a => AFG[a.type].high)) acts.push(`<li><strong>Waterzijdig inregelen.</strong> Laat de installateur het systeem inregelen, zodat elke radiator de juiste hoeveelheid water krijgt. Dat is nodig om op lage temperatuur overal warm te krijgen.</li>`);
+
+  return `
+    <div class="card notes" style="border-left:4px solid ${color}">
+      <h3>${title}</h3>
+      <p class="muted">${text}</p>
+      ${acts.length ? `<ul>${acts.join('')}</ul>` : ''}
+    </div>`;
+}
+
+function placementCard(i, r) {
+  const items = [];
+  const add = (cls, head, text) => items.push(`<li class="${cls}"><b>${cls === 'ok' ? '✓' : '!'}</b><span><strong>${head}</strong> ${text}</span></li>`);
+  const aeRec = r.advies === 'ae' || r.advies === 'ae-check';
+
+  // Outdoor unit
+  if (!i.buiten.length) {
+    add('let', 'Buitenunit: nog onbekend.', 'Kijk waar een unit van ± 1 × 1 m kan staan, liefst op de grond aan de achter- of zijkant.');
+  } else if (i.buiten.includes('geen')) {
+    add('stop', 'Geen plek voor een buitenunit.', `Een lucht-water-warmtepomp heeft een buitenunit nodig. Alternatieven: een <em>ventilatiewarmtepomp</em> die warmte uit je ventilatielucht haalt (past bij mechanische ventilatie, ± 1–2 kW, vooral voor warm water en als hybride)${r.bodemOk ? ', of een <em>bodemwarmtepomp</em> met een bron in de tuin (duurder, maar stil, zuinig en zonder buitenunit)' : ''}. Vraag bij een appartement ook naar een collectieve oplossing via de VvE.`);
+  } else {
+    if (i.buiten.includes('grond')) add('ok', 'Op de grond aan de achter- of zijgevel.', 'Dit is de beste plek: stevig, goed bereikbaar voor onderhoud en het minst last van trillingen. Zet de unit op een betonnen tegel of trillingsdempers, met ± 30 cm vrije ruimte aan de achterkant.');
+    else if (i.buiten.includes('dak')) add('let', 'Op een plat dak.', 'Kan goed, maar laat de draagkracht controleren (een unit weegt 60–150 kg) en zorg voor een onderhoudspad. Plaatsing op een dak geeft vaak minder geluid bij de buren.');
+    else if (i.buiten.includes('gevel')) add('let', 'Aan de gevel op beugels.', 'Mogelijk, maar trillingen kunnen via de muur binnen hoorbaar worden. Gebruik zware trillingsdempende beugels en hang de unit liefst niet aan de muur van een slaapkamer.');
+    else if (i.buiten.includes('balkon')) add('let', 'Op het balkon.', 'Vraag toestemming van de VvE en let op het geluid bij de buren boven en naast je. Kies een compact en stil model.');
+  }
+  if (i.buiten.length && !i.buiten.includes('geen')) {
+    if (i.buren === 'dicht') add('stop', 'Dicht bij de buren.', 'Sinds 2024 geldt een geluidsnorm van 40 dB(A) op de erfgrens. Op minder dan 2 m haal je die alleen met een heel stil model (let op het geluidsvermogen, liefst ≤ 55 dB(A)), een geluidsscherm of -kap, of een andere plek. Laat de installateur een geluidsberekening maken.');
+    else if (i.buren === 'mid') add('let', 'Geluid.', 'Op 2 tot 5 meter van de buren is de geluidsnorm van 40 dB(A) meestal haalbaar met een stil model. Vraag naar het geluidsvermogen en of er een stille nachtstand is.');
+    else add('ok', 'Geluid.', 'Op meer dan 5 meter van de buren is geluid meestal geen probleem.');
+  }
+  if (i.monument === 'ja') add('let', 'Monument of beschermd gezicht.', 'Voor een buitenunit die vanaf de straat zichtbaar is, heb je vaak een omgevingsvergunning nodig. Plaats hem aan de achterkant of op een plat dak uit het zicht en overleg vooraf met de gemeente.');
+  else if (i.monument === '?') add('let', 'Monumentstatus onbekend.', 'Controleer dit op het Omgevingsloket of bij je gemeente. Bij een monument of beschermd gezicht gelden extra regels voor zichtbare buitenunits.');
+
+  if (r.bodemOk && i.bodem === 'ja') add('let', 'Bodembron.', `Voor een bron van ± ${nf0.format(r.bron[0])}–${nf0.format(r.bron[1])} m moet een boorwagen bij de plek kunnen, op minstens ± 3 m van gebouw en erfgrens. Check op het Omgevingsloket of je perceel niet in een grondwaterbeschermingsgebied ligt; daar is boren vaak verboden. Een bodemwarmtepomp is meestal groter dan een binnenunit van lucht-water en staat graag in een berging of garage.`);
+
+  // Indoor space
+  const binnenOk = i.binnen.length && !i.binnen.includes('geen');
+  if (aeRec) {
+    if (!i.binnen.length) add('let', 'Plek voor het boilervat: nog onbekend.', `Voor all-electric heb je een vat van ± ${r.boiler} liter nodig (± 60 × 60 cm, 1,7–2 m hoog).`);
+    else if (!binnenOk) add('stop', 'Geen plek voor een boilervat.', 'Zonder boilervat is all-electric lastig. Kies voor een hybride warmtepomp (de cv-ketel blijft het warme water maken) of vraag naar een compacte binnenunit met ingebouwd vat, die soms op de plek van de cv-ketel past.');
+    else {
+      if (i.binnen.includes('zolder') && i.binnen.length === 1) add('let', 'Boilervat op zolder.', `Kan, maar een vol vat van ${r.boiler} liter weegt ± ${r.boiler + 60} kg. Laat de vloer controleren en houd rekening met langere leidingen naar keuken en badkamer.`);
+      else add('ok', 'Plek voor het boilervat.', `Een vat van ± ${r.boiler} liter past op de plek die je hebt aangegeven. Hoe dichter bij de badkamer, hoe sneller warm water.`);
+    }
+  } else {
+    add('ok', 'Binnenruimte voor hybride.', 'Een hybride warmtepomp heeft binnen alleen een klein kastje nodig naast de cv-ketel. Meestal past dat zonder aanpassingen.');
+  }
+
+  // Pipes and electricity
+  if (i.leiding === 'lang') add('let', 'Lange leidingen.', 'Bij meer dan 15 meter tussen buiten- en binnenunit worden de leidingen duurder, en bij een split-systeem is er meer koudemiddel nodig. Een monoblock met waterleidingen naar binnen is dan vaak handiger (goed isoleren en beschermen tegen vorst).');
+  else if (i.leiding === 'kort') add('ok', 'Korte leidingen.', 'Minder dan 5 meter tussen buiten en binnen houdt de installatie eenvoudig en goedkoper.');
+  if (aeRec && r.hi >= 7 && i.aansluiting !== '3f') add('let', 'Elektriciteitsaansluiting.', `Een all-electric warmtepomp van ${kw(r.lo)}–${kw(r.hi)} kW met een elektrisch element als back-up vraagt veel stroom. Met een 1-fase aansluiting kan dat krap worden; ${i.aansluiting === '1f' ? 'overweeg' : 'check je aansluiting en overweeg'} een verzwaring naar 3 × 25 A (± € 250–600 bij de netbeheerder). Een eigen groep in de meterkast is altijd nodig.`);
+  else add('ok', 'Elektriciteitsaansluiting.', 'Waarschijnlijk voldoende. De warmtepomp krijgt wel een eigen groep in de meterkast.');
+
+  return `
+    <div class="card notes">
+      <h3>Past een warmtepomp in en om je huis?</h3>
+      <ul class="checklist">${items.join('')}</ul>
+    </div>`;
+}
+
+function coolingCard(i, r) {
+  if (i.koeling === 'nee') return '';
+  const has = t => r.central.some(a => a.type === t);
+  const items = [];
+  const add = (cls, head, text) => items.push(`<li class="${cls}"><b>${cls === 'ok' ? '✓' : '!'}</b><span><strong>${head}</strong> ${text}</span></li>`);
+
+  // What the heat pump can do
+  if (r.bodemOk) add('ok', 'Bodemwarmtepomp: passief koelen.', 'Het koele water uit de bron (± 12 °C) wordt door de vloer of fancoils gepompt, zonder dat de compressor draait. Dat kost alleen de circulatiepomp (± 50–150 kWh per zomer) en laadt de bron weer op voor de winter.');
+  add('ok', 'Lucht-water: actief koelen.', 'Kies een omkeerbaar model (vraag naar "koelfunctie" of "reversible"). Koelen kost stroom, maar met zonnepanelen valt dat in de zomer vaak weg tegen je eigen opwek.');
+  add('let', 'Hybride: meestal geen koeling.', 'De meeste hybride warmtepompen kunnen niet koelen. Is koeling belangrijk, dan past all-electric of een losse airco beter.');
+
+  // What the emitters can do
+  if (has('vloer') || has('wand')) add('ok', `${has('vloer') ? 'Vloer' : 'Wand'}koeling.`, `Koelt ruimtes 2–4 °C, stil en zonder tocht. Het water mag niet kouder worden dan ± 18 °C om condens te voorkomen: daarvoor zijn een dauwpuntbewaking en thermostaten met koelfunctie nodig. Laat ook checken of de verdeler en mengregeling koelen ondersteunen.`);
+  if (has('fancoil')) add('ok', 'Ventiloconvectoren (fancoils).', 'Kunnen echt koelen en ook ontvochtigen. Er is wel een condensafvoer per unit nodig.');
+  if (has('rad') || has('conv') || has('ltv')) {
+    const floors = r.central.filter(a => ['rad', 'conv', 'ltv'].includes(a.type)).map(a => a.floor).join(' en ');
+    add('let', `Radiatoren op de ${floors}.`, 'Gewone en lage-temperatuurradiatoren kunnen nauwelijks koelen en kunnen gaan condenseren. Vervang de radiatoren in de kamers die je wilt koelen (vaak de slaapkamers) door <em>koelradiatoren</em>: radiatoren met ventilator en condensafvoer (± € 800–1.500 per stuk). Een losse airco (lucht-lucht warmtepomp) in de slaapkamer is een alternatief.');
+  }
+  if (i.koeling === 'belangrijk' && r.advies.startsWith('hyb')) add('let', 'Koeling en hybride advies.', 'Ons advies voor verwarming is hybride, en die kan meestal niet koelen. Weeg af of een losse airco voor de warmste kamers volstaat.');
+  add('ok', 'Begin bij de zon.', 'Buitenzonwering (screens, rolluiken) houdt 70–90% van de zonnewarmte buiten en is de goedkoopste koeling die er is.');
+
+  return `
+    <div class="card notes">
+      <h3>Koelen in de zomer</h3>
+      <ul class="checklist">${items.join('')}</ul>
+    </div>`;
+}
+
+function renderResult(i, r) {
+  const aeRec = r.advies === 'ae' || r.advies === 'ae-check';
+  const scaleMax = Math.max(6, Math.ceil((r.hi + 2) / 2) * 2);
+  const pct = v => (v / scaleMax * 100).toFixed(1) + '%';
+  const ticks = []; const step = scaleMax <= 12 ? 2 : scaleMax <= 24 ? 4 : 6;
+  for (let t = 0; t <= scaleMax; t += step) ticks.push(`<span>${t}</span>`);
+
+  const adviesTxt = {
+    'ae': ['All-electric is goed haalbaar', 'Je woning is goed geïsoleerd en je verwarmt al op lage temperatuur. Een volledig elektrische warmtepomp kan de cv-ketel vervangen, zodat je van het gas af kunt.'],
+    'ae-check': ['All-electric kan, check je radiatoren', 'Je woning is goed genoeg geïsoleerd, maar gewone radiatoren zijn op lage temperatuur soms te klein. Laat de installateur per kamer controleren of ze bij 45–55 °C genoeg warmte leveren. Zo niet, dan vervang je een paar radiatoren of kies je eerst voor hybride.'],
+    'hyb': ['Hybride is de verstandige eerste stap', 'Voor all-electric is je woning nog aan de grens. Een hybride warmtepomp bespaart direct het grootste deel van je gas. Na extra isolatie kun je later alsnog volledig overstappen.'],
+    'hyb-iso': ['Begin met isoleren, dan hybride', 'Je woning verliest relatief veel warmte. Isoleren levert hier het meeste op en maakt de benodigde warmtepomp kleiner en goedkoper. Een hybride warmtepomp is daarna de logische stap.'],
+  }[r.advies];
+
+  const opt = (rec, title, range, rows, desc, badge) => `
+    <div class="card opt ${rec ? 'rec' : ''}">
+      <span class="badge ${rec ? '' : badge ? 'green' : 'alt'}">${rec ? 'Past het best' : badge || 'Alternatief'}</span>
+      <h3>${title}</h3>
+      <div class="kw tnum">${range}</div>
+      <p class="muted small" style="margin:6px 0 0">${desc}</p>
+      <dl class="kv tnum">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+    </div>`;
+
+  const aeRows = [
+    ['Aanschaf incl. installatie', `${eur(r.aeCost[0])} – ${eur(r.aeCost[1])}`],
+    ['ISDE-subsidie (indicatie)', `${eur(r.isdeAE[0])} – ${eur(r.isdeAE[1])}`],
+    ['Boilervat warm water', `${r.boiler} liter`],
+    ['Stroomverbruik erbij', `± ${nf0.format(Math.round(r.aeKwh / 100) * 100)} kWh/jaar`],
+    ['Besparing per jaar', r.aeSave > 0 ? `± ${eur(r.aeSave)}` : 'geen'],
+    ['Terugverdientijd', payback(r.aeCost, r.isdeAE, r.aeSave)],
+  ];
+  const hybRows = [
+    ['Aanschaf incl. installatie', `${eur(r.hybCost[0])} – ${eur(r.hybCost[1])}`],
+    ['ISDE-subsidie (indicatie)', `${eur(r.isdeHyb[0])} – ${eur(r.isdeHyb[1])}`],
+    ['Gasbesparing', `± ${nf0.format(Math.round(r.hybGasSaved / 50) * 50)} m³/jaar`],
+    ['Stroomverbruik erbij', `± ${nf0.format(Math.round(r.hybKwh / 100) * 100)} kWh/jaar`],
+    ['Besparing per jaar', r.hybSave > 0 ? `± ${eur(r.hybSave)}` : 'geen'],
+    ['Terugverdientijd', payback(r.hybCost, r.isdeHyb, r.hybSave)],
+  ];
+  // Ground source is recommended when all-electric fits but there's no room outside for an air unit
+  const bodemRec = r.bodemOk && aeRec && i.bodem === 'ja' && i.buiten.includes('geen');
+  const bodemRows = [
+    ['Aanschaf incl. bron en installatie', `${eur(r.bodemCost[0])} – ${eur(r.bodemCost[1])}`],
+    ['ISDE-subsidie (indicatie)', `${eur(r.isdeBodem[0])} – ${eur(r.isdeBodem[1])}`],
+    ['Bronlengte (verticaal)', `± ${nf0.format(r.bron[0])} – ${nf0.format(r.bron[1])} m`],
+    ['Seizoensrendement (SCOP)', `± ${nf1.format(r.scopBodem)} (lucht-water ± ${nf1.format(r.scop)})`],
+    ['Stroomverbruik erbij', `± ${nf0.format(Math.round(r.bodemKwh / 100) * 100)} kWh/jaar`],
+    ['Besparing per jaar', r.bodemSave > 0 ? `± ${eur(r.bodemSave)}` : 'geen'],
+    ['Terugverdientijd', payback(r.bodemCost, r.isdeBodem, r.bodemSave)],
+  ];
+  const bodem = r.bodemOk ? opt(bodemRec, 'Bodemwarmtepomp (brine/water)', `${kw(r.lo)} – ${kw(r.hi)} kW`, bodemRows,
+    `Haalt warmte uit een gesloten bodembron. Geen buitenunit, stil, het zuinigst en kan in de zomer bijna gratis koelen.${i.bodem === '?' ? ' Laat eerst checken of boren op jouw perceel mag en kan.' : ''}`, 'Zuinigst') : '';
+  const ae = opt(aeRec && !bodemRec, 'All-electric warmtepomp', `${kw(r.lo)} – ${kw(r.hi)} kW`, aeRows, 'Vervangt de cv-ketel volledig, inclusief warm water.');
+  const hyb = opt(!aeRec, 'Hybride warmtepomp', `${kw(r.hLo)} – ${kw(r.hHi)} kW`, hybRows, 'Werkt samen met je cv-ketel, die bijspringt op koude dagen en voor warm water.');
+
+  const ketelTip = {
+    '15': `<li><strong>Je cv-ketel is 10 tot 15 jaar oud.</strong> Een hybride warmtepomp werkt samen met de ketel, maar die gaat meestal 15 tot 20 jaar mee. Kies je voor hybride, houd dan rekening met een nieuwe ketel binnen een paar jaar. Is all-electric haalbaar, dan is dit een logisch moment om over te stappen.</li>`,
+    '20': `<li><strong>Je cv-ketel is ouder dan 15 jaar.</strong> Die is aan vervanging toe. Vervang hem niet door alleen een nieuwe ketel: kies all-electric als dat kan, of hybride samen met een nieuwe ketel. Een oude ketel is ook minder zuinig, daar hebben we in de berekening rekening mee gehouden.</li>`,
+    'geen': `<li><strong>Geen cv-ketel.</strong> Een hybride warmtepomp werkt samen met een cv-ketel en past dus niet bij stadsverwarming. Bij een warmtenet is overstappen meestal niet nodig of toegestaan; vraag je warmteleverancier naar de mogelijkheden.</li>`,
+  }[i.ketelLeeftijd];
+  const tips = [
+    `<li><strong>Vraag naar het vermogen bij −7 °C of −10 °C.</strong> Fabrikanten adverteren vaak met het vermogen bij +7 °C, dat 30–40% hoger ligt. Een "8 kW-pomp" levert bij vorst soms maar 5–6 kW.</li>`,
+    `<li><strong>Laat een warmteverliesberekening maken</strong> (ISSO 51/53). Valt de uitkomst ver buiten jouw range van ${kw(r.lo)}–${kw(r.hi)} kW? Vraag dan waarom.</li>`,
+    `<li><strong>Groter is niet beter.</strong> Een te grote warmtepomp slaat vaak aan en af (pendelen), wat rendement en levensduur kost. Kies het liefst een model dat ver kan terugmoduleren.</li>`,
+  ];
+  if (r.highFloors.length) {
+    const lowOther = r.central.some(a => !AFG[a.type].high);
+    if (lowOther) tips.push(`<li><strong>Je combineert hoge en lage temperatuur.</strong> De radiatoren of convectoren op de ${r.highFloors.join(' en ')} bepalen nu de aanvoertemperatuur voor het hele huis. Een paar grotere of lage-temperatuurradiatoren daar maakt de warmtepomp merkbaar zuiniger. Zolang de radiatoren warmer water nodig hebben dan de vloer, blijft een mengregeling voor de vloerverwarming nodig. Lukt het om de radiatoren op vloertemperatuur te krijgen, dan kan die eruit.</li>`);
+  }
+  if (r.advies === 'hyb-iso') tips.push(`<li><strong>Isoleer eerst.</strong> Spouwmuur- en dakisolatie verdienen zich vaak binnen 5–8 jaar terug en verkleinen de warmtepomp die je nodig hebt.</li>`);
+  if (ketelTip) tips.unshift(ketelTip);
+  r.redenen.forEach(t => tips.push(`<li>${t}</li>`));
+
+  $('#step3').innerHTML = `
+    <div class="result-head">
+      <h2>Jouw warmtepompadvies</h2>
+      <p class="muted">${house.address ? esc(house.address) + ' · ' : ''}${TYPE_TXT[i.type]} · ${nf0.format(i.opp)} m²${i.bouwjaar ? ' · bouwjaar ' + i.bouwjaar : ''}${i.label ? ' · label ' + i.label : ''}</p>
+    </div>
+
+    <div class="card big">
+      <div class="label">Benodigd verwarmingsvermogen bij −10 °C</div>
+      <div class="value tnum">${kw(r.lo)} – ${kw(r.hi)}<small>kW</small></div>
+      <div class="muted small">Nauwkeurigheid: <strong>${r.accuracy}</strong>${i.gas ? '' : ' · vul je gasverbruik in voor een scherpere range'}</div>
+      <div class="scale" aria-hidden="true">
+        <div class="track"></div>
+        <div class="band" style="left:${pct(r.lo)};width:calc(${pct(r.hi)} - ${pct(r.lo)})"></div>
+        <div class="band hyb" style="left:${pct(r.hLo)};width:calc(${pct(r.hHi)} - ${pct(r.hLo)})"></div>
+        <div class="ticks tnum">${ticks.join('')}</div>
+      </div>
+      <div class="legend"><span><i style="background:var(--brand)"></i>All-electric</span><span><i style="background:var(--accent)"></i>Hybride</span><span class="muted">schaal in kW</span></div>
+    </div>
+
+    <div class="card notes" style="border-left:4px solid var(--brand)">
+      <h3>${adviesTxt[0]}</h3>
+      <p class="muted" style="margin:0">${adviesTxt[1]}</p>
+    </div>
+
+    ${ltvCard(i, r)}
+
+    ${placementCard(i, r)}
+
+    ${coolingCard(i, r)}
+
+    <div class="grid-opts">${bodemRec ? bodem + ae + hyb : aeRec ? ae + hyb + bodem : hyb + ae + bodem}</div>
+
+    <div class="card notes">
+      <h3>Zo gebruik je dit advies bij offertes</h3>
+      <ul>${tips.join('')}</ul>
+    </div>
+
+    <details class="card basis">
+      <summary>Hoe hebben we dit berekend?</summary>
+      <table class="tnum">${r.basis.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+        <tr><td>Warmtevraag ruimteverwarming (geschat)</td><td>${nf0.format(Math.round(r.spaceHeatKwh / 100) * 100)} kWh/jaar</td></tr>
+        ${r.highFloors.length ? `<tr><td>Ketel staat op${i.ketelTemp ? '' : ' (aangenomen)'}</td><td>${r.ketelT} °C</td></tr>` : ''}
+        <tr><td>Afgifte: ${i.afgifte.map(a => a.floor + ' ' + AFG[a.type].txt.toLowerCase()).join(', ')}</td><td>± ${r.supplyT} °C aanvoer</td></tr>
+        <tr><td>Aangenomen seizoensrendement (SCOP) all-electric</td><td>${nf1.format(r.scop)}</td></tr>
+        <tr><td>Aandeel warmte door hybride warmtepomp</td><td>± 78%</td></tr>
+      </table>
+      <p class="muted small" style="margin:12px 0 0">Ontwerpcondities −10 °C buiten, 20 °C binnen, ${HOURS} vollasturen per jaar. Het vermogen volgens gasverbruik rekent met ${KWH_PER_M3} kWh per m³ en een ketelrendement van 90%. Het gasverbruik voor warm water schatten we op ${nf0.format(r.tapM3)} m³ voor jouw huishouden. Kosten en subsidie zijn indicatief (prijspeil 2026). Kijk voor de actuele ISDE-bedragen op <a href="https://www.rvo.nl/subsidies-financiering/isde" target="_blank" rel="noopener">rvo.nl</a>.</p>
+    </details>
+
+    <div class="actions">
+      <button class="btn btn-ghost" id="backBtn">← Gegevens aanpassen</button>
+      <button class="btn btn-ghost" onclick="window.print()">Advies printen of opslaan als pdf</button>
+      <button class="btn btn-primary" id="againBtn">Nieuwe scan</button>
+    </div>
+
+    <p class="disclaimer">Aan dit advies kunnen geen rechten worden ontleend. Het is een eerste indicatie op basis van gemiddelde woningkenmerken. Een warmteverliesberekening door een erkende installateur bij jou thuis blijft een onmisbare stap.</p>
+  `;
+  $('#backBtn').onclick = () => showStep(2);
+  $('#againBtn').onclick = () => { sub = 0; maxSub = 0; hasResult = false; lastChange = ''; prevCenter = null; deltaHtml = ''; $('#houseForm').reset(); $('#startForm').reset(); resetAfg(); isoTouched = false; $('#bijFreq').hidden = true; house = { address: null }; goHome(); $('#pc').focus(); };
+}
+})();
+</script>
+</body>
+</html>
